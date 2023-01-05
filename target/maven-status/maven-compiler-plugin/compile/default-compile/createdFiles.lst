@@ -1,0 +1,11 @@
+dto\Zastavka.class
+dto\Data.class
+algoritmus\Vzdialenosti.class
+dto\Usek.class
+MainTrieda.class
+konfiguracia\Konstanty.class
+dto\Spoj.class
+algoritmus\Vzdialenosti$PomZastavka.class
+importExport\ImportExportDat.class
+gurobiModel\Priklad.class
+algoritmus\MoznePrepojeniaSpojov.class
