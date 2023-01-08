@@ -7,6 +7,7 @@ import gurobi.GRBException;
 import gurobi.GRBLinExpr;
 import gurobi.GRBModel;
 import gurobi.GRBVar;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,34 +22,29 @@ public class MinPocetAutobusov {
             GRBEnv env = new GRBEnv("minPocetAutobusov.log");
             GRBModel model = new GRBModel(env);
 
-            GRBVar x = model.addVar(0, 1, 0, GRB.BINARY, "x");
-            GRBVar y = model.addVar(0, 1, 0, GRB.BINARY, "y");
-            GRBVar z = model.addVar(0, 1, 0, GRB.BINARY, "z");
+            Map<FunkciePreModel.KlucSpoja, Map<FunkciePreModel.KlucSpoja, GRBVar>> premenne = FunkciePreModel.vytvorPremenneXij(model, data.getSpoje());
 
-            GRBLinExpr expr = new GRBLinExpr();
-            expr.addTerm(1, x);
-            expr.addTerm(1, y);
-            expr.addTerm(2, z);
-            model.setObjective(expr, GRB.MAXIMIZE);
+            GRBVar[] premenneXij = FunkciePreModel.vytvorSucetXij(premenne);
+            GRBLinExpr ucelovaFunkcia = new GRBLinExpr();
+            ucelovaFunkcia.addTerms(FunkciePreModel.vytvorPoleJednotiek(premenneXij.length), premenneXij);
+            model.setObjective(ucelovaFunkcia, GRB.MAXIMIZE);
 
-            GRBLinExpr con1 = new GRBLinExpr();
-            con1.addTerm(1, x);
-            con1.addTerm(2, y);
-            con1.addTerm(3, z);
-            model.addConstr(con1, GRB.LESS_EQUAL, 4, "c0");
+            GRBLinExpr[] podmienky1 = FunkciePreModel.vytvorPodmienkySucetXijPodlaI(premenne, data.getSpoje());
+            model.addConstrs(podmienky1, FunkciePreModel.vytvorPoleMensiRovny(podmienky1.length),
+                    FunkciePreModel.vytvorPoleJednotiek(podmienky1.length), FunkciePreModel.vytvorNazvyPodmienok(podmienky1.length, "1"));
 
-            GRBLinExpr con2 = new GRBLinExpr();
-            con2.addTerm(1, x);
-            con2.addTerm(1, y);
-            model.addConstr(con2, GRB.GREATER_EQUAL, 1, "c1");
+            GRBLinExpr[] podmienky2 = FunkciePreModel.vytvorPodmienkySucetXijPodlaJ(premenne, data.getSpoje());
+            model.addConstrs(podmienky1, FunkciePreModel.vytvorPoleMensiRovny(podmienky2.length),
+                    FunkciePreModel.vytvorPoleJednotiek(podmienky2.length), FunkciePreModel.vytvorNazvyPodmienok(podmienky2.length, "2"));
 
             model.optimize();
-            System.out.println(x.get(GRB.StringAttr.VarName) + " " + x.get(GRB.DoubleAttr.X));
-            System.out.println(y.get(GRB.StringAttr.VarName) + " " + y.get(GRB.DoubleAttr.X));
-            System.out.println(z.get(GRB.StringAttr.VarName) + " " + z.get(GRB.DoubleAttr.X));
 
-            System.out.println("Obj: " + model.get(GRB.DoubleAttr.ObjVal));
-
+            System.out.println("Minimálny počet autobusov: " + (data.getSpoje().size() - model.get(GRB.DoubleAttr.ObjVal)));
+            for (GRBVar var : model.getVars()) {
+                if (var.get(GRB.DoubleAttr.X) == 1) {
+                    System.out.println(var.get(GRB.StringAttr.VarName));
+                }
+            }
             model.dispose();
             env.dispose();
         } catch (GRBException ex) {
