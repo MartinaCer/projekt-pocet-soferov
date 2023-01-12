@@ -2,6 +2,7 @@ package dto;
 
 import algoritmus.MoznePrepojeniaSpojov;
 import algoritmus.Vzdialenosti;
+import dto.Spoj.KlucSpoja;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -14,17 +15,17 @@ public class Data {
 
     private final Map<Integer, Zastavka> zastavky;
     private final List<Usek> useky;
-    private final List<Spoj> spoje;
+    private final Map<KlucSpoja, Spoj> spoje;
     private final List<Integer> garaze;
     private final Map<Integer, Map<Integer, Integer>> vzdialenosti;
 
-    public Data(Map<Integer, Zastavka> zastavky, List<Usek> useky, List<Spoj> spoje, List<Integer> garaze) {
+    public Data(Map<Integer, Zastavka> zastavky, List<Usek> useky, Map<KlucSpoja, Spoj> spoje, List<Integer> garaze) {
         this.zastavky = zastavky;
         this.useky = useky;
         this.spoje = spoje;
         this.garaze = garaze;
         this.vzdialenosti = Vzdialenosti.vypocitaj(new ArrayList<>(zastavky.values()), useky);
-        MoznePrepojeniaSpojov.vypocitaj(spoje, vzdialenosti);
+        MoznePrepojeniaSpojov.vypocitaj(new ArrayList<>(spoje.values()), vzdialenosti);
     }
 
     public Map<Integer, Zastavka> getZastavky() {
@@ -35,7 +36,7 @@ public class Data {
         return useky;
     }
 
-    public List<Spoj> getSpoje() {
+    public Map<KlucSpoja, Spoj> getSpoje() {
         return spoje;
     }
 

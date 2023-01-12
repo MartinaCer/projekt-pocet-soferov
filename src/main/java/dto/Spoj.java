@@ -10,8 +10,7 @@ import java.util.List;
  */
 public class Spoj {
 
-    private final int id;
-    private final int linka;
+    private final KlucSpoja kluc;
     private final Zastavka miestoOdchodu;
     private final Zastavka miestoPrichodu;
     private final LocalTime casOdchodu;
@@ -26,8 +25,7 @@ public class Spoj {
 
     public Spoj(int id, int linka, Zastavka miestoOdchodu, Zastavka miestoPrichodu,
             LocalTime casOdchodu, LocalTime casPrichodu, int kilometre) {
-        this.id = id;
-        this.linka = linka;
+        this.kluc = new KlucSpoja(id, linka);
         this.miestoOdchodu = miestoOdchodu;
         this.miestoPrichodu = miestoPrichodu;
         this.casOdchodu = casOdchodu;
@@ -37,12 +35,8 @@ public class Spoj {
         this.mozneNasledovneSpojenia = new ArrayList<>();
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public int getLinka() {
-        return linka;
+    public KlucSpoja getKluc() {
+        return kluc;
     }
 
     public Zastavka getMiestoOdchodu() {
@@ -87,6 +81,55 @@ public class Spoj {
 
     public void setNasledovnySpoj(Spoj nasledovnySpoj) {
         this.nasledovnySpoj = nasledovnySpoj;
+    }
+
+    public static class KlucSpoja {
+
+        private final int id;
+        private final int linka;
+
+        public KlucSpoja(int id, int linka) {
+            this.id = id;
+            this.linka = linka;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public int getLinka() {
+            return linka;
+        }
+
+        @Override
+        public String toString() {
+            return id + ";" + linka;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final KlucSpoja other = (KlucSpoja) obj;
+            if (this.id != other.id) {
+                return false;
+            }
+            return this.linka == other.linka;
+        }
+
     }
 
 }

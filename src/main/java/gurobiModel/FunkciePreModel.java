@@ -1,6 +1,7 @@
 package gurobiModel;
 
 import dto.Spoj;
+import dto.Spoj.KlucSpoja;
 import gurobi.GRB;
 import gurobi.GRBException;
 import gurobi.GRBLinExpr;
@@ -63,10 +64,10 @@ public final class FunkciePreModel {
     public static Map<KlucSpoja, Map<KlucSpoja, GRBVar>> vytvorPremenneXij(GRBModel model, List<Spoj> spoje) throws GRBException {
         Map<KlucSpoja, Map<KlucSpoja, GRBVar>> premenne = new HashMap<>();
         for (Spoj iSpoj : spoje) {
-            KlucSpoja iKluc = new KlucSpoja(iSpoj.getId(), iSpoj.getLinka());
+            KlucSpoja iKluc = iSpoj.getKluc();
             for (Spoj jSpoj : iSpoj.getMozneNasledovneSpojenia()) {
-                KlucSpoja jKluc = new KlucSpoja(jSpoj.getId(), jSpoj.getLinka());
-                premenne.computeIfAbsent(iKluc, k -> new HashMap<>()).put(jKluc, model.addVar(0, 1, 0, GRB.BINARY, "x_" + iKluc.id + "_" + jKluc.id));
+                KlucSpoja jKluc = jSpoj.getKluc();
+                premenne.computeIfAbsent(iKluc, k -> new HashMap<>()).put(jKluc, model.addVar(0, 1, 0, GRB.BINARY, "x_" + iKluc.toString() + "_" + jKluc.toString()));
             }
         }
         return premenne;
@@ -84,7 +85,7 @@ public final class FunkciePreModel {
             if (!iSpoj.getMozneNasledovneSpojenia().isEmpty()) {
                 GRBLinExpr podmienka = new GRBLinExpr();
                 iSpoj.getMozneNasledovneSpojenia().forEach(jSpoj
-                        -> podmienka.addTerm(1, premenne.get(new KlucSpoja(iSpoj.getId(), iSpoj.getLinka())).get(new KlucSpoja(jSpoj.getId(), jSpoj.getLinka()))));
+                        -> podmienka.addTerm(1, premenne.get(iSpoj.getKluc()).get(jSpoj.getKluc())));
                 podmienky.add(podmienka);
             }
         }
@@ -97,47 +98,11 @@ public final class FunkciePreModel {
             if (!iSpoj.getMoznePredosleSpojenia().isEmpty()) {
                 GRBLinExpr podmienka = new GRBLinExpr();
                 iSpoj.getMoznePredosleSpojenia().forEach(jSpoj
-                        -> podmienka.addTerm(1, premenne.get(new KlucSpoja(jSpoj.getId(), jSpoj.getLinka())).get(new KlucSpoja(iSpoj.getId(), iSpoj.getLinka()))));
+                        -> podmienka.addTerm(1, premenne.get(jSpoj.getKluc()).get(iSpoj.getKluc())));
                 podmienky.add(podmienka);
             }
         }
         return vytvorPolePodmienok(podmienky);
-    }
-
-    public static class KlucSpoja {
-
-        private final int id;
-        private final int linka;
-
-        public KlucSpoja(int id, int linka) {
-            this.id = id;
-            this.linka = linka;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 7;
-            return hash;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            KlucSpoja other = (KlucSpoja) obj;
-            if (this.id != other.id) {
-                return false;
-            }
-            return this.linka == other.linka;
-        }
-
     }
 
 }

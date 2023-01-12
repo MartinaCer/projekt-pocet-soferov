@@ -1,6 +1,7 @@
 package importExport;
 
 import dto.Spoj;
+import dto.Spoj.KlucSpoja;
 import dto.Usek;
 import dto.Zastavka;
 import java.io.BufferedReader;
@@ -61,8 +62,8 @@ public final class ImportExportDat {
         return useky;
     }
 
-    public static List<Spoj> nacitajSpoje(Map<Integer, Zastavka> zastavky) throws IOException {
-        List<Spoj> spoje = new ArrayList<>();
+    public static Map<KlucSpoja, Spoj> nacitajSpoje(Map<Integer, Zastavka> zastavky) throws IOException {
+        Map<KlucSpoja, Spoj> spoje = new HashMap<>();
         InputStream is = ImportExportDat.class.getResourceAsStream(SPOJE);
         BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
         String riadok;
@@ -75,7 +76,8 @@ public final class ImportExportDat {
             int idKonca = Integer.valueOf(spoj[5]);
             LocalTime prichod = LocalTime.parse(spoj[7].length() == 8 ? spoj[7] : "0".concat(spoj[7]));
             int kilometre = Integer.valueOf(spoj[8]);
-            spoje.add(new Spoj(idSpoja, idLinky, zastavky.get(idZaciatku), zastavky.get(idKonca), odchod, prichod, kilometre));
+            Spoj vytvorenySpoj = new Spoj(idSpoja, idLinky, zastavky.get(idZaciatku), zastavky.get(idKonca), odchod, prichod, kilometre);
+            spoje.put(vytvorenySpoj.getKluc(), vytvorenySpoj);
         }
         br.close();
         is.close();
