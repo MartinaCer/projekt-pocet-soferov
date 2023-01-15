@@ -2,10 +2,15 @@ package gurobiModel;
 
 import dto.Spoj;
 import dto.Spoj.KlucSpoja;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  *
@@ -16,26 +21,93 @@ public final class VypisyPreModel {
     private VypisyPreModel() {
     }
 
-    public static List<List<Spoj>> vytvorTurnusy(List<String> nasledujuceSpoje, Map<KlucSpoja, Spoj> spoje) {
+    public static void vytvorVypisTurnusy(List<String> nasledujuceSpoje, Map<KlucSpoja, Spoj> spoje) throws FileNotFoundException {
         List<List<Spoj>> turnusy = new ArrayList<>();
         for (String spoj : nasledujuceSpoje) {
             String[] data = spoj.split("_");
-            String[] sZaciatok = data[1].split(";");
-            String[] sKoniec = data[2].split(";");
-            KlucSpoja zaciatok = new KlucSpoja(Integer.valueOf(sZaciatok[0]), Integer.valueOf(sZaciatok[1]));
-            KlucSpoja koniec = new KlucSpoja(Integer.valueOf(sKoniec[0]), Integer.valueOf(sKoniec[1]));
+            String[] sISpoj = data[1].split(";");
+            String[] sJSpoj = data[2].split(";");
+            KlucSpoja iSpoj = new KlucSpoja(Integer.valueOf(sISpoj[0]), Integer.valueOf(sISpoj[1]));
+            KlucSpoja jSpoj = new KlucSpoja(Integer.valueOf(sJSpoj[0]), Integer.valueOf(sJSpoj[1]));
+            boolean novyTurnus = true;
             for (List<Spoj> turnus : turnusy) {
-                if (turnus.get(turnus.size() - 1).getKluc().equals(zaciatok)) {
-                    turnus.add(spoje.get(zaciatok));
+                if (turnus.get(turnus.size() - 1).getKluc().equals(iSpoj)) {
+                    turnus.add(spoje.get(jSpoj));
+                    novyTurnus = false;
                     break;
                 }
-                if (turnus.get(0).getKluc().equals(koniec)) {
-                    turnus.add(0, spoje.get(koniec));
+                if (turnus.get(0).getKluc().equals(jSpoj)) {
+                    turnus.add(0, spoje.get(iSpoj));
+                    novyTurnus = false;
                     break;
                 }
-                turnusy.add(Arrays.asList(spoje.get(zaciatok)));
+            }
+            if (novyTurnus) {
+                turnusy.add(new ArrayList<>(Arrays.asList(spoje.get(iSpoj), spoje.get(jSpoj))));
+            } else {
+                int index = -1;
+                for (int i = 0; i < turnusy.size(); i++) {
+                    List<Spoj> turnus = turnusy.get(i);
+                    Spoj prvy = turnus.get(0);
+                    Spoj posledny = turnus.get(turnus.size() - 1);
+                    for (int j = 0; j < turnusy.size(); j++) {
+                        List<Spoj> turnus2 = turnusy.get(j);
+                        Spoj prvy2 = turnus2.get(0);
+                        Spoj posledny2 = turnus2.get(turnus2.size() - 1);
+                        if (prvy.getKluc().equals(posledny2.getKluc())) {
+                            turnus2.remove(posledny2);
+                            turnus.addAll(0, turnus2);
+                            index = j;
+                            break;
+                        }
+                        if (posledny.getKluc().equals(prvy2.getKluc())) {
+                            turnus2.remove(prvy2);
+                            turnus.addAll(turnus2);
+                            index = j;
+                            break;
+                        }
+                    }
+                }
+                if (index != -1) {
+                    turnusy.remove(index);
+                }
             }
         }
-        return turnusy;
+        List<String[]> data = new ArrayList<>();
+        System.out.println("Turnusy:");
+        for (int i = 0; i < turnusy.size(); i++) {
+            String turnus = i + 1 + ": ";
+            for (Spoj spoj : turnusy.get(i)) {
+                turnus += spoj.getKluc().toString() + "(" + spoj.getCasOdchodu() + ";" + spoj.getCasPrichodu() + ") -> ";
+            }
+            System.out.println(turnus);
+            data.add(new String[]{turnusy.get(i).get(0).getKluc().toString(), turnusy.get(i).get(turnusy.get(i).size() - 1).getKluc().toString()});
+        }
+        File fTur = new File("turnusy.csv");
+        try {
+            PrintWriter pw = new PrintWriter(fTur);
+            for (String[] strings : data) {
+                pw.println(Stream.of(strings).collect(Collectors.joining(";")));
+            }
+            pw.close();
+        } catch (FileNotFoundException ex) {
+        }
     }
+
+    public static void vypisSpoje(List<String> sSpoje, Map<KlucSpoja, Spoj> spoje, boolean prve) {
+        System.out.println(prve ? "Prvé spoje:" : "Posledné spoje:");
+        File fTur = new File("spoje" + (prve ? "1" : "2") + ".csv");
+        try {
+            PrintWriter pw = new PrintWriter(fTur);
+            for (String sSpoj : sSpoje) {
+                String[] ssSpoj = sSpoj.split("_")[1].split(";");
+                Spoj spoj = spoje.get(new KlucSpoja(Integer.valueOf(ssSpoj[0]), Integer.valueOf(ssSpoj[1])));
+                System.out.println(spoj.getKluc().toString() + "(" + spoj.getCasOdchodu() + ";" + spoj.getCasPrichodu() + ")");
+                pw.println(spoj.getKluc().toString());
+            }
+            pw.close();
+        } catch (FileNotFoundException ex) {
+        }
+    }
+
 }
