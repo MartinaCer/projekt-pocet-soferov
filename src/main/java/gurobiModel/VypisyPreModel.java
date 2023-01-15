@@ -21,7 +21,7 @@ public final class VypisyPreModel {
     private VypisyPreModel() {
     }
 
-    public static void vytvorVypisTurnusy(List<String> nasledujuceSpoje, Map<KlucSpoja, Spoj> spoje) throws FileNotFoundException {
+    public static void vytvorVypisTurnusy(List<String> nasledujuceSpoje, Map<KlucSpoja, Spoj> spoje) {
         List<List<Spoj>> turnusy = new ArrayList<>();
         for (String spoj : nasledujuceSpoje) {
             String[] data = spoj.split("_");

@@ -1,6 +1,7 @@
 package gurobiModel;
 
 import dto.Data;
+import dto.Spoj;
 import dto.Spoj.KlucSpoja;
 import gurobi.GRB;
 import gurobi.GRBEnv;
@@ -18,42 +19,42 @@ import java.util.logging.Logger;
  *
  * @author Martina Cernekova
  */
-public class MinPrazdnePrejazdyGaraz {
+public class MinPrazdnePrejazdyGaraze {
 
     public void optimalizuj(Data data, int pocetAutobusov) {
         try {
-            GRBEnv env = new GRBEnv("minPrazdnePrejazdyGaraz.log");
+            GRBEnv env = new GRBEnv("minPrazdnePrejazdyGaraze.log");
             GRBModel model = new GRBModel(env);
 
-            Map<KlucSpoja, Map<KlucSpoja, GRBVar>> xIJ = FunkciePreModel.vytvorPremenneXij(model, new ArrayList<>(data.getSpoje().values()));
-            Map<KlucSpoja, GRBVar> uJ = FunkciePreModel.vytvorPremenneUjVi(model, new ArrayList<>(data.getSpoje().values()), "u");
-            Map<KlucSpoja, GRBVar> vI = FunkciePreModel.vytvorPremenneUjVi(model, new ArrayList<>(data.getSpoje().values()), "v");
+            Map<KlucSpoja, Map<KlucSpoja, Map<Integer, GRBVar>>> xIJK = FunkciePreModel.vytvorPremenneXijk(model, new ArrayList<>(data.getSpoje().values()), data.getGaraze());
+            Map<KlucSpoja, Map<Integer, GRBVar>> uJK = FunkciePreModel.vytvorPremenneUjkVik(model, new ArrayList<>(data.getSpoje().values()), data.getGaraze(), "u");
+            Map<KlucSpoja, Map<Integer, GRBVar>> vIK = FunkciePreModel.vytvorPremenneUjkVik(model, new ArrayList<>(data.getSpoje().values()), data.getGaraze(), "v");
             model.update();
 
-            GRBVar[] premenneXij = FunkciePreModel.vytvorSucetXij(xIJ);
-            GRBVar[] premenneUj = FunkciePreModel.vytvorSucetUjVj(uJ);
-            GRBVar[] premenneVi = FunkciePreModel.vytvorSucetUjVj(vI);
+            GRBVar[] premenneXijk = FunkciePreModel.vytvorSucetXijk(xIJK);
+            GRBVar[] premenneUjk = FunkciePreModel.vytvorSucetUjkVjk(uJK);
+            GRBVar[] premenneVik = FunkciePreModel.vytvorSucetUjkVjk(vIK);
             GRBLinExpr ucelovaFunkcia = new GRBLinExpr();
-            ucelovaFunkcia.addTerms(FunkciePreModel.vytvorPoleVzdialenosti(premenneXij, data.getSpoje(), data.getVzdialenosti()), premenneXij);
-            ucelovaFunkcia.addTerms(FunkciePreModel.vytvorPoleVzdialenostiPreGaraz(premenneUj, data.getSpoje(), data.getVzdialenosti(), data.getGaraze().get(0), true), premenneUj);
-            ucelovaFunkcia.addTerms(FunkciePreModel.vytvorPoleVzdialenostiPreGaraz(premenneVi, data.getSpoje(), data.getVzdialenosti(), data.getGaraze().get(0), false), premenneVi);
+            ucelovaFunkcia.addTerms(FunkciePreModel.vytvorPoleVzdialenostiGaraze(premenneXijk, data.getSpoje(), data.getVzdialenosti()), premenneXijk);
+            ucelovaFunkcia.addTerms(FunkciePreModel.vytvorPoleVzdialenostiPreGaraze(premenneUjk, data.getSpoje(), data.getVzdialenosti(), true), premenneUjk);
+            ucelovaFunkcia.addTerms(FunkciePreModel.vytvorPoleVzdialenostiPreGaraze(premenneVik, data.getSpoje(), data.getVzdialenosti(), false), premenneVik);
             model.setObjective(ucelovaFunkcia, GRB.MINIMIZE);
 
-            GRBLinExpr[] podmienky1 = FunkciePreModel.vytvorPodmienkySucetXijPodlaIaUj(xIJ, uJ, new ArrayList<>(data.getSpoje().values()));
+            GRBLinExpr[] podmienky1 = FunkciePreModel.vytvorPodmienkySucetXijPodlaIaUjk(xIJK, uJK, new ArrayList<>(data.getSpoje().values()), data.getGaraze());
             model.addConstrs(podmienky1, FunkciePreModel.vytvorPoleRovny(podmienky1.length),
                     FunkciePreModel.vytvorPoleJednotiek(podmienky1.length), FunkciePreModel.vytvorNazvyPodmienok(podmienky1.length, "1"));
 
-            GRBLinExpr[] podmienky2 = FunkciePreModel.vytvorPodmienkySucetXijPodlaJaVi(xIJ, vI, new ArrayList<>(data.getSpoje().values()));
+            GRBLinExpr[] podmienky2 = FunkciePreModel.vytvorPodmienkySucetXijPodlaJaVik(xIJK, vIK, new ArrayList<>(data.getSpoje().values()), data.getGaraze());
             model.addConstrs(podmienky2, FunkciePreModel.vytvorPoleRovny(podmienky2.length),
                     FunkciePreModel.vytvorPoleJednotiek(podmienky2.length), FunkciePreModel.vytvorNazvyPodmienok(podmienky2.length, "2"));
 
             GRBLinExpr podmienkaPocetAutobusov = new GRBLinExpr();
-            podmienkaPocetAutobusov.addTerms(FunkciePreModel.vytvorPoleJednotiek(premenneXij.length), premenneXij);
+            podmienkaPocetAutobusov.addTerms(FunkciePreModel.vytvorPoleJednotiek(premenneXijk.length), premenneXijk);
             model.addConstr(podmienkaPocetAutobusov, GRB.EQUAL, data.getSpoje().size() - pocetAutobusov, "3");
 
             model.optimize();
 
-            System.out.println("Minimálne prázdne prejazdy s garážou: " + model.get(GRB.DoubleAttr.ObjVal) + " sekúnd");
+            System.out.println("Minimálne prázdne prejazdy s garážami: " + model.get(GRB.DoubleAttr.ObjVal) + " sekúnd");
             List<String> spoje = new ArrayList<>();
             List<String> prve = new ArrayList<>();
             List<String> posledne = new ArrayList<>();

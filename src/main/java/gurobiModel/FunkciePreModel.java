@@ -82,8 +82,22 @@ public final class FunkciePreModel {
         }
         return pole;
     }
+    
+    public static double[] vytvorPoleVzdialenostiGaraze(GRBVar[] premenneXijk, Map<KlucSpoja, Spoj> spoje, Map<Integer, Map<Integer, Integer>> vzdialenosti) throws GRBException {
+        double[] pole = new double[premenneXijk.length];
+        for (int i = 0; i < premenneXijk.length; i++) {
+            String premenna = premenneXijk[i].get(GRB.StringAttr.VarName);
+            String[] data = premenna.split("_");
+            String[] sISpoj = data[1].split(";");
+            String[] sJSpoj = data[2].split(";");
+            Spoj iSpoj = spoje.get(new KlucSpoja(Integer.valueOf(sISpoj[0]), Integer.valueOf(sISpoj[1])));
+            Spoj jSpoj = spoje.get(new KlucSpoja(Integer.valueOf(sJSpoj[0]), Integer.valueOf(sJSpoj[1])));
+            pole[i] = vzdialenosti.get(iSpoj.getMiestoPrichodu().getId()).get(jSpoj.getMiestoOdchodu().getId());
+        }
+        return pole;
+    }
 
-    public static double[] vytvorPoleVzdialenostiGaraz(GRBVar[] premenneUjVi, Map<KlucSpoja, Spoj> spoje,
+    public static double[] vytvorPoleVzdialenostiPreGaraz(GRBVar[] premenneUjVi, Map<KlucSpoja, Spoj> spoje,
             Map<Integer, Map<Integer, Integer>> vzdialenosti, int idGaraze, boolean doGaraze) throws GRBException {
         double[] pole = new double[premenneUjVi.length];
         for (int i = 0; i < premenneUjVi.length; i++) {
@@ -94,6 +108,21 @@ public final class FunkciePreModel {
             pole[i] = doGaraze
                     ? vzdialenosti.get(spoj.getMiestoPrichodu().getId()).get(idGaraze)
                     : vzdialenosti.get(idGaraze).get(spoj.getMiestoOdchodu().getId());
+        }
+        return pole;
+    }
+    
+    public static double[] vytvorPoleVzdialenostiPreGaraze(GRBVar[] premenneUjkVik, Map<KlucSpoja, Spoj> spoje,
+            Map<Integer, Map<Integer, Integer>> vzdialenosti, boolean doGaraze) throws GRBException {
+        double[] pole = new double[premenneUjkVik.length];
+        for (int i = 0; i < premenneUjkVik.length; i++) {
+            String premenna = premenneUjkVik[i].get(GRB.StringAttr.VarName);
+            String[] data = premenna.split("_");
+            String[] sSpoj = data[1].split(";");
+            Spoj spoj = spoje.get(new KlucSpoja(Integer.valueOf(sSpoj[0]), Integer.valueOf(sSpoj[1])));
+            pole[i] = doGaraze
+                    ? vzdialenosti.get(spoj.getMiestoPrichodu().getId()).get(Integer.valueOf(data[2]))
+                    : vzdialenosti.get(Integer.valueOf(data[2])).get(spoj.getMiestoOdchodu().getId());
         }
         return pole;
     }
@@ -110,10 +139,36 @@ public final class FunkciePreModel {
         return premenne;
     }
 
+    public static Map<KlucSpoja, Map<KlucSpoja, Map<Integer, GRBVar>>> vytvorPremenneXijk(GRBModel model, List<Spoj> spoje, List<Integer> garaze) throws GRBException {
+        Map<KlucSpoja, Map<KlucSpoja, Map<Integer, GRBVar>>> premenne = new HashMap<>();
+        for (Spoj iSpoj : spoje) {
+            KlucSpoja iKluc = iSpoj.getKluc();
+            for (Spoj jSpoj : iSpoj.getMozneNasledovneSpojenia()) {
+                KlucSpoja jKluc = jSpoj.getKluc();
+                for (Integer idGaraze : garaze) {
+                    premenne.computeIfAbsent(iKluc, k -> new HashMap<>()).computeIfAbsent(jKluc, k -> new HashMap<>())
+                            .put(idGaraze, model.addVar(0, 1, 0, GRB.BINARY, "x_" + iKluc.toString() + "_" + jKluc.toString() + "_" + idGaraze));
+                }
+            }
+        }
+        return premenne;
+    }
+
     public static Map<KlucSpoja, GRBVar> vytvorPremenneUjVi(GRBModel model, List<Spoj> spoje, String meno) throws GRBException {
         Map<KlucSpoja, GRBVar> premenne = new HashMap<>();
         for (Spoj spoj : spoje) {
             premenne.put(spoj.getKluc(), model.addVar(0, 1, 0, GRB.BINARY, meno + "_" + spoj.getKluc().toString()));
+        }
+        return premenne;
+    }
+
+    public static Map<KlucSpoja, Map<Integer, GRBVar>> vytvorPremenneUjkVik(GRBModel model, List<Spoj> spoje, List<Integer> garaze, String meno) throws GRBException {
+        Map<KlucSpoja, Map<Integer, GRBVar>> premenne = new HashMap<>();
+        for (Spoj spoj : spoje) {
+            for (Integer idGaraze : garaze) {
+                premenne.computeIfAbsent(spoj.getKluc(), k -> new HashMap<>())
+                        .put(idGaraze, model.addVar(0, 1, 0, GRB.BINARY, meno + "_" + spoj.getKluc().toString() + "_" + idGaraze));
+            }
         }
         return premenne;
     }
@@ -124,9 +179,21 @@ public final class FunkciePreModel {
         return vytvorPolePremennych(retPremenne);
     }
 
+    public static GRBVar[] vytvorSucetXijk(Map<KlucSpoja, Map<KlucSpoja, Map<Integer, GRBVar>>> premenne) {
+        List<GRBVar> retPremenne = new ArrayList<>();
+        premenne.entrySet().forEach(e -> e.getValue().entrySet().forEach(e1 -> e1.getValue().entrySet().forEach(e2 -> retPremenne.add(e2.getValue()))));
+        return vytvorPolePremennych(retPremenne);
+    }
+
     public static GRBVar[] vytvorSucetUjVj(Map<KlucSpoja, GRBVar> premenne) {
         List<GRBVar> retPremenne = new ArrayList<>();
         premenne.entrySet().forEach(e -> retPremenne.add(e.getValue()));
+        return vytvorPolePremennych(retPremenne);
+    }
+
+    public static GRBVar[] vytvorSucetUjkVjk(Map<KlucSpoja, Map<Integer, GRBVar>> premenne) {
+        List<GRBVar> retPremenne = new ArrayList<>();
+        premenne.entrySet().forEach(e -> e.getValue().entrySet().forEach(e1 -> retPremenne.add(e1.getValue())));
         return vytvorPolePremennych(retPremenne);
     }
 
@@ -150,6 +217,19 @@ public final class FunkciePreModel {
             iSpoj.getMozneNasledovneSpojenia().forEach(jSpoj
                     -> podmienka.addTerm(1, premenneXij.get(iSpoj.getKluc()).get(jSpoj.getKluc())));
             podmienka.addTerm(1, premenneUj.get(iSpoj.getKluc()));
+            podmienky.add(podmienka);
+        }
+        return vytvorPolePodmienok(podmienky);
+    }
+
+    public static GRBLinExpr[] vytvorPodmienkySucetXijPodlaIaUjk(Map<KlucSpoja, Map<KlucSpoja, Map<Integer, GRBVar>>> premenneXijk,
+            Map<KlucSpoja, Map<Integer, GRBVar>> premenneUjk, List<Spoj> spoje, List<Integer> garaze) {
+        List<GRBLinExpr> podmienky = new ArrayList<>();
+        for (Spoj iSpoj : spoje) {
+            GRBLinExpr podmienka = new GRBLinExpr();
+            iSpoj.getMozneNasledovneSpojenia().forEach(jSpoj
+                    -> garaze.forEach(idGaraze -> podmienka.addTerm(1, premenneXijk.get(iSpoj.getKluc()).get(jSpoj.getKluc()).get(idGaraze))));
+            garaze.forEach(idGaraze -> podmienka.addTerm(1, premenneUjk.get(iSpoj.getKluc()).get(idGaraze)));
             podmienky.add(podmienka);
         }
         return vytvorPolePodmienok(podmienky);
@@ -180,4 +260,16 @@ public final class FunkciePreModel {
         return vytvorPolePodmienok(podmienky);
     }
 
+    public static GRBLinExpr[] vytvorPodmienkySucetXijPodlaJaVik(Map<KlucSpoja, Map<KlucSpoja, Map<Integer, GRBVar>>> premenneXijk,
+            Map<KlucSpoja, Map<Integer, GRBVar>> premenneVik, List<Spoj> spoje, List<Integer> garaze) {
+        List<GRBLinExpr> podmienky = new ArrayList<>();
+        for (Spoj jSpoj : spoje) {
+            GRBLinExpr podmienka = new GRBLinExpr();
+            jSpoj.getMoznePredosleSpojenia().forEach(iSpoj
+                    -> garaze.forEach(idGaraze -> podmienka.addTerm(1, premenneXijk.get(iSpoj.getKluc()).get(jSpoj.getKluc()).get(idGaraze))));
+            garaze.forEach(idGaraze -> podmienka.addTerm(1, premenneVik.get(jSpoj.getKluc()).get(idGaraze)));
+            podmienky.add(podmienka);
+        }
+        return vytvorPolePodmienok(podmienky);
+    }
 }
