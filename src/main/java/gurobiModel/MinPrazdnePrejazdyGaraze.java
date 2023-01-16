@@ -74,9 +74,9 @@ public class MinPrazdnePrejazdyGaraze {
                     }
                 }
             }
-            VypisyPreModel.vytvorVypisTurnusy(spoje, data.getSpoje());
-            VypisyPreModel.vypisSpoje(prve, data.getSpoje(), true);
-            VypisyPreModel.vypisSpoje(posledne, data.getSpoje(), false);
+            VypisyPreModel.vytvorVypisTurnusyGaraze(spoje, data.getSpoje());
+            VypisyPreModel.vypisSpojeGaraze(prve, data.getSpoje(), true);
+            VypisyPreModel.vypisSpojeGaraze(posledne, data.getSpoje(), false);
             model.dispose();
             env.dispose();
         } catch (GRBException ex) {

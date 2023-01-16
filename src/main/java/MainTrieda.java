@@ -4,6 +4,7 @@ import dto.Zastavka;
 import gurobiModel.MinPocetAutobusov;
 import gurobiModel.MinPrazdnePrejazdy;
 import gurobiModel.MinPrazdnePrejazdyGaraz;
+import gurobiModel.MinPrazdnePrejazdyGaraze;
 import importExport.ImportExportDat;
 import java.io.IOException;
 import java.util.Map;
@@ -21,7 +22,8 @@ public class MainTrieda {
         //MinPocetAutobusov model = new MinPocetAutobusov();
         //model.optimalizuj(data);
         //MinPrazdnePrejazdy model = new MinPrazdnePrejazdy();
-        MinPrazdnePrejazdyGaraz model = new MinPrazdnePrejazdyGaraz();
+        //MinPrazdnePrejazdyGaraz model = new MinPrazdnePrejazdyGaraz();
+        MinPrazdnePrejazdyGaraze model = new MinPrazdnePrejazdyGaraze();
         model.optimalizuj(data, 106);
     }
 }
