@@ -1,7 +1,7 @@
 package gurobiModel;
 
+import com.itextpdf.text.DocumentException;
 import dto.Data;
-import dto.Spoj;
 import dto.Spoj.KlucSpoja;
 import gurobi.GRB;
 import gurobi.GRBEnv;
@@ -9,6 +9,9 @@ import gurobi.GRBException;
 import gurobi.GRBLinExpr;
 import gurobi.GRBModel;
 import gurobi.GRBVar;
+import gurobiModel.VypisyPreModel.SpojGaraz;
+import importExport.ImportExportDat;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -64,33 +67,21 @@ public class MinPrazdnePrejazdyGaraze {
 
             System.out.println("Minimálne prázdne prejazdy s garážami: " + model.get(GRB.DoubleAttr.ObjVal) + " sekúnd");
             List<String> spoje = new ArrayList<>();
-            List<String> prve = new ArrayList<>();
-            List<String> posledne = new ArrayList<>();
             for (GRBVar var : model.getVars()) {
                 if (var.get(GRB.DoubleAttr.X) == 1) {
                     String v = var.get(GRB.StringAttr.VarName);
-                    switch (v.charAt(0)) {
-                        case 'x':
-                            if (v.chars().filter(c -> c == '_').count() == 3) {
-                                spoje.add(v);
-                            }
-                            break;
-                        case 'v':
-                            if (v.chars().filter(c -> c == '_').count() == 2) {
-                                prve.add(v);
-                            }
-                            break;
-                        default:
-                            if (v.chars().filter(c -> c == '_').count() == 2) {
-                                posledne.add(v);
-                            }
-                            break;
+                    if (v.charAt(0) == 'x' && v.chars().filter(c -> c == '_').count() == 3) {
+                        spoje.add(v);
                     }
                 }
             }
-            VypisyPreModel.vytvorVypisTurnusyGaraze(spoje, data.getSpoje());
-            VypisyPreModel.vypisSpojeGaraze(prve, data.getSpoje(), true);
-            VypisyPreModel.vypisSpojeGaraze(posledne, data.getSpoje(), false);
+            List<List<SpojGaraz>> turnusy = VypisyPreModel.vytvorTurnusyGaraze(spoje, data.getSpoje());
+            VypisyPreModel.vypisTurnusyGaraze(turnusy);
+            try {
+                ImportExportDat.vypisTurnusyDoPdf(turnusy, data.getZastavky());
+            } catch (FileNotFoundException | DocumentException ex) {
+                Logger.getLogger(MinPrazdnePrejazdyGaraze.class.getName()).log(Level.SEVERE, null, ex);
+            }
             model.dispose();
             env.dispose();
         } catch (GRBException ex) {

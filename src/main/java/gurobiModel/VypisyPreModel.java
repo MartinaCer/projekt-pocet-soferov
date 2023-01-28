@@ -2,15 +2,10 @@ package gurobiModel;
 
 import dto.Spoj;
 import dto.Spoj.KlucSpoja;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  *
@@ -21,7 +16,7 @@ public final class VypisyPreModel {
     private VypisyPreModel() {
     }
 
-    public static void vytvorVypisTurnusy(List<String> nasledujuceSpoje, Map<KlucSpoja, Spoj> spoje) {
+    public static List<List<Spoj>> vytvorTurnusy(List<String> nasledujuceSpoje, Map<KlucSpoja, Spoj> spoje) {
         List<List<Spoj>> turnusy = new ArrayList<>();
         for (String spoj : nasledujuceSpoje) {
             String[] data = spoj.split("_");
@@ -73,7 +68,10 @@ public final class VypisyPreModel {
                 }
             }
         }
-        List<String[]> data = new ArrayList<>();
+        return turnusy;
+    }
+
+    public static void vypisTurnusy(List<List<Spoj>> turnusy) {
         System.out.println("Turnusy:");
         for (int i = 0; i < turnusy.size(); i++) {
             String turnus = i + 1 + ": ";
@@ -81,26 +79,16 @@ public final class VypisyPreModel {
                 turnus += spoj.getKluc().toString() + "(" + spoj.getCasOdchodu() + ";" + spoj.getCasPrichodu() + ") -> ";
             }
             System.out.println(turnus);
-            data.add(new String[]{turnusy.get(i).get(0).getKluc().toString(), turnusy.get(i).get(turnusy.get(i).size() - 1).getKluc().toString()});
-        }
-        File fTur = new File("turnusy.csv");
-        try {
-            PrintWriter pw = new PrintWriter(fTur);
-            for (String[] strings : data) {
-                pw.println(Stream.of(strings).collect(Collectors.joining(";")));
-            }
-            pw.close();
-        } catch (FileNotFoundException ex) {
         }
     }
 
-    public static void vytvorVypisTurnusyGaraze(List<String> nasledujuceSpoje, Map<KlucSpoja, Spoj> spoje) {
+    public static List<List<SpojGaraz>> vytvorTurnusyGaraze(List<String> nasledujuceSpoje, Map<KlucSpoja, Spoj> spoje) {
         List<List<SpojGaraz>> turnusy = new ArrayList<>();
         for (String spoj : nasledujuceSpoje) {
             String[] data = spoj.split("_");
             String[] sISpoj = data[1].split(";");
             String[] sJSpoj = data[2].split(";");
-            String idGaraze = data[3];
+            int idGaraze = Integer.valueOf(data[3]);
             KlucSpoja iSpoj = new KlucSpoja(Integer.valueOf(sISpoj[0]), Integer.valueOf(sISpoj[1]));
             KlucSpoja jSpoj = new KlucSpoja(Integer.valueOf(sJSpoj[0]), Integer.valueOf(sJSpoj[1]));
             boolean novyTurnus = true;
@@ -147,7 +135,10 @@ public final class VypisyPreModel {
                 }
             }
         }
-        List<String[]> data = new ArrayList<>();
+        return turnusy;
+    }
+
+    public static void vypisTurnusyGaraze(List<List<SpojGaraz>> turnusy) {
         System.out.println("Turnusy:");
         for (int i = 0; i < turnusy.size(); i++) {
             String turnus = i + 1 + ": ";
@@ -155,60 +146,25 @@ public final class VypisyPreModel {
                 turnus += spoj.spoj.getKluc().toString() + ";" + spoj.garaz + "(" + spoj.spoj.getCasOdchodu() + ";" + spoj.spoj.getCasPrichodu() + ") -> ";
             }
             System.out.println(turnus);
-            data.add(new String[]{turnusy.get(i).get(0).spoj.getKluc().toString(), turnusy.get(i).get(0).garaz,
-                turnusy.get(i).get(turnusy.get(i).size() - 1).spoj.getKluc().toString(), turnusy.get(i).get(turnusy.get(i).size() - 1).garaz});
-        }
-        File fTur = new File("turnusy.csv");
-        try {
-            PrintWriter pw = new PrintWriter(fTur);
-            for (String[] strings : data) {
-                pw.println(Stream.of(strings).collect(Collectors.joining(";")));
-            }
-            pw.close();
-        } catch (FileNotFoundException ex) {
         }
     }
 
-    public static void vypisSpoje(List<String> sSpoje, Map<KlucSpoja, Spoj> spoje, boolean prve) {
-        System.out.println(prve ? "Prvé spoje:" : "Posledné spoje:");
-        File fTur = new File("spoje" + (prve ? "1" : "2") + ".csv");
-        try {
-            PrintWriter pw = new PrintWriter(fTur);
-            for (String sSpoj : sSpoje) {
-                String[] ssSpoj = sSpoj.split("_")[1].split(";");
-                Spoj spoj = spoje.get(new KlucSpoja(Integer.valueOf(ssSpoj[0]), Integer.valueOf(ssSpoj[1])));
-                System.out.println(spoj.getKluc().toString() + "(" + spoj.getCasOdchodu() + ";" + spoj.getCasPrichodu() + ")");
-                pw.println(spoj.getKluc().toString());
-            }
-            pw.close();
-        } catch (FileNotFoundException ex) {
-        }
-    }
-
-    public static void vypisSpojeGaraze(List<String> sSpoje, Map<KlucSpoja, Spoj> spoje, boolean prve) {
-        System.out.println(prve ? "Prvé spoje:" : "Posledné spoje:");
-        File fTur = new File("spoje" + (prve ? "1" : "2") + ".csv");
-        try {
-            PrintWriter pw = new PrintWriter(fTur);
-            for (String sSpoj : sSpoje) {
-                String[] ssSpoj = sSpoj.split("_")[1].split(";");
-                Spoj spoj = spoje.get(new KlucSpoja(Integer.valueOf(ssSpoj[0]), Integer.valueOf(ssSpoj[1])));
-                System.out.println(spoj.getKluc().toString() + ";" + sSpoj.split("_")[2] + "(" + spoj.getCasOdchodu() + ";" + spoj.getCasPrichodu() + ")");
-                pw.println(spoj.getKluc().toString() + ";" + sSpoj.split("_")[2]);
-            }
-            pw.close();
-        } catch (FileNotFoundException ex) {
-        }
-    }
-
-    private static class SpojGaraz {
+    public static class SpojGaraz {
 
         private final Spoj spoj;
-        private final String garaz;
+        private final int garaz;
 
-        public SpojGaraz(Spoj spoj, String garaz) {
+        public SpojGaraz(Spoj spoj, int garaz) {
             this.spoj = spoj;
             this.garaz = garaz;
+        }
+
+        public Spoj getSpoj() {
+            return spoj;
+        }
+
+        public int getGaraz() {
+            return garaz;
         }
 
     }

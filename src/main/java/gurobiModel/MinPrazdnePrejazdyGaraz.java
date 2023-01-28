@@ -55,27 +55,15 @@ public class MinPrazdnePrejazdyGaraz {
 
             System.out.println("Minimálne prázdne prejazdy s garážou: " + model.get(GRB.DoubleAttr.ObjVal) + " sekúnd");
             List<String> spoje = new ArrayList<>();
-            List<String> prve = new ArrayList<>();
-            List<String> posledne = new ArrayList<>();
             for (GRBVar var : model.getVars()) {
                 if (var.get(GRB.DoubleAttr.X) == 1) {
                     String v = var.get(GRB.StringAttr.VarName);
-                    switch (v.charAt(0)) {
-                        case 'x':
-                            spoje.add(v);
-                            break;
-                        case 'v':
-                            prve.add(v);
-                            break;
-                        default:
-                            posledne.add(v);
-                            break;
+                    if (v.charAt(0) == 'x') {
+                        spoje.add(v);
                     }
                 }
             }
-            VypisyPreModel.vytvorVypisTurnusy(spoje, data.getSpoje());
-            VypisyPreModel.vypisSpoje(prve, data.getSpoje(), true);
-            VypisyPreModel.vypisSpoje(posledne, data.getSpoje(), false);
+            VypisyPreModel.vypisTurnusy(VypisyPreModel.vytvorTurnusy(spoje, data.getSpoje()));
             model.dispose();
             env.dispose();
         } catch (GRBException ex) {

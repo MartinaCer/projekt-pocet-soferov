@@ -49,7 +49,7 @@ public class MinPocetAutobusov {
                     spoje.add(var.get(GRB.StringAttr.VarName));
                 }
             }
-            VypisyPreModel.vytvorVypisTurnusy(spoje, data.getSpoje());
+            VypisyPreModel.vypisTurnusy(VypisyPreModel.vytvorTurnusy(spoje, data.getSpoje()));
             model.dispose();
             env.dispose();
         } catch (GRBException ex) {
