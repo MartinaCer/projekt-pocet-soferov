@@ -17,15 +17,17 @@ public class Data {
     private final List<Usek> useky;
     private final Map<KlucSpoja, Spoj> spoje;
     private final List<Integer> garaze;
-    private final Map<Integer, Map<Integer, Integer>> vzdialenosti;
+    private final Map<Integer, Map<Integer, Integer>> casVzdialenosti;
+    private final Map<Integer, Map<Integer, Integer>> kmVzdialenosti;
 
     public Data(Map<Integer, Zastavka> zastavky, List<Usek> useky, Map<KlucSpoja, Spoj> spoje, List<Integer> garaze) {
         this.zastavky = zastavky;
         this.useky = useky;
         this.spoje = spoje;
         this.garaze = garaze;
-        this.vzdialenosti = Vzdialenosti.vypocitaj(new ArrayList<>(zastavky.values()), useky);
-        MoznePrepojeniaSpojov.vypocitaj(new ArrayList<>(spoje.values()), vzdialenosti);
+        this.casVzdialenosti = Vzdialenosti.vypocitaj(new ArrayList<>(zastavky.values()), useky, true);
+        this.kmVzdialenosti = Vzdialenosti.vypocitaj(new ArrayList<>(zastavky.values()), useky, false);
+        MoznePrepojeniaSpojov.vypocitaj(new ArrayList<>(spoje.values()), casVzdialenosti);
     }
 
     public Map<Integer, Zastavka> getZastavky() {
@@ -44,8 +46,12 @@ public class Data {
         return garaze;
     }
 
-    public Map<Integer, Map<Integer, Integer>> getVzdialenosti() {
-        return vzdialenosti;
+    public Map<Integer, Map<Integer, Integer>> getCasVzdialenosti() {
+        return casVzdialenosti;
+    }
+
+    public Map<Integer, Map<Integer, Integer>> getKmVzdialenosti() {
+        return kmVzdialenosti;
     }
 
 }

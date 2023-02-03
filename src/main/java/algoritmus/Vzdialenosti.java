@@ -17,14 +17,14 @@ public final class Vzdialenosti {
     private Vzdialenosti() {
     }
 
-    public static Map<Integer, Map<Integer, Integer>> vypocitaj(List<Zastavka> zastavky, List<Usek> useky) {
+    public static Map<Integer, Map<Integer, Integer>> vypocitaj(List<Zastavka> zastavky, List<Usek> useky, boolean cas) {
         Map<Integer, Map<Integer, Integer>> vzdialenosti = new HashMap<>();
-        zastavky.forEach(n -> vzdialenosti.put(n.getId(), vypocitajVzdialenostiPreZastavku(n.getId(), zastavky, useky)));
+        zastavky.forEach(n -> vzdialenosti.put(n.getId(), vypocitajVzdialenostiPreZastavku(n.getId(), zastavky, useky, cas)));
         return vzdialenosti;
     }
 
-    private static Map<Integer, Integer> vypocitajVzdialenostiPreZastavku(int id, List<Zastavka> zastavky, List<Usek> useky) {
-        PriorityQueue<PomZastavka> neprejdene = new PriorityQueue<>((o1, o2) -> Integer.compare(o1.sekundy, o2.sekundy));
+    private static Map<Integer, Integer> vypocitajVzdialenostiPreZastavku(int id, List<Zastavka> zastavky, List<Usek> useky, boolean cas) {
+        PriorityQueue<PomZastavka> neprejdene = new PriorityQueue<>((o1, o2) -> Double.compare(o1.vzd, o2.vzd));
         Map<Integer, Integer> prejdene = new HashMap<>();
         zastavky.forEach(n -> {
             if (n.getId() == id) {
@@ -36,7 +36,7 @@ public final class Vzdialenosti {
 
         while (!neprejdene.isEmpty()) {
             PomZastavka pomZastavka = neprejdene.poll();
-            prejdene.put(pomZastavka.id, pomZastavka.sekundy);
+            prejdene.put(pomZastavka.id, (int) pomZastavka.vzd);
             useky.stream()
                     .filter(e -> e.getZaciatok().getId() == pomZastavka.id)
                     .forEach(e -> {
@@ -44,11 +44,11 @@ public final class Vzdialenosti {
                             return ee.id == e.getKoniec().getId();
                         }).findFirst();
                         if (pomZ.isPresent()) {
-                            int vzdialenost = e.getSekundy() + pomZastavka.sekundy;
+                            double vzdialenost = (cas ? e.getSekundy() : e.getKilometre()) + pomZastavka.vzd;
 
-                            if (pomZ.get().sekundy > vzdialenost) {
+                            if (pomZ.get().vzd > vzdialenost) {
                                 neprejdene.remove(pomZ.get());
-                                pomZ.get().sekundy = vzdialenost;
+                                pomZ.get().vzd = vzdialenost;
                                 neprejdene.add(pomZ.get());
                             }
                         }
@@ -61,11 +61,11 @@ public final class Vzdialenosti {
     private static class PomZastavka {
 
         private int id;
-        private int sekundy;
+        private double vzd;
 
-        public PomZastavka(int id, int sekundy) {
+        public PomZastavka(int id, double vzd) {
             this.id = id;
-            this.sekundy = sekundy;
+            this.vzd = vzd;
         }
 
     }

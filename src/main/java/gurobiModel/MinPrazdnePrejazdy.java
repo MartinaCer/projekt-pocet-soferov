@@ -30,7 +30,7 @@ public class MinPrazdnePrejazdy {
 
             GRBVar[] premenneXij = FunkciePreModel.vytvorSucetXij(premenne);
             GRBLinExpr ucelovaFunkcia = new GRBLinExpr();
-            ucelovaFunkcia.addTerms(FunkciePreModel.vytvorPoleVzdialenosti(premenneXij, data.getSpoje(), data.getVzdialenosti()), premenneXij);
+            ucelovaFunkcia.addTerms(FunkciePreModel.vytvorPoleVzdialenosti(premenneXij, data.getSpoje(), data.getKmVzdialenosti()), premenneXij);
             model.setObjective(ucelovaFunkcia, GRB.MINIMIZE);
 
             GRBLinExpr[] podmienky1 = FunkciePreModel.vytvorPodmienkySucetXijPodlaI(premenne, new ArrayList<>(data.getSpoje().values()));
@@ -47,7 +47,7 @@ public class MinPrazdnePrejazdy {
 
             model.optimize();
 
-            System.out.println("Minimálne prázdne prejazdy: " + model.get(GRB.DoubleAttr.ObjVal) + " sekúnd");
+            System.out.println("Minimálne prázdne prejazdy: " + model.get(GRB.DoubleAttr.ObjVal) + " kilometrov");
             List<String> spoje = new ArrayList<>();
             for (GRBVar var : model.getVars()) {
                 if (var.get(GRB.DoubleAttr.X) == 1) {

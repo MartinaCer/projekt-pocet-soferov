@@ -34,9 +34,9 @@ public class MinPrazdnePrejazdyGaraz {
             GRBVar[] premenneUj = FunkciePreModel.vytvorSucetUjVj(uJ);
             GRBVar[] premenneVi = FunkciePreModel.vytvorSucetUjVj(vI);
             GRBLinExpr ucelovaFunkcia = new GRBLinExpr();
-            ucelovaFunkcia.addTerms(FunkciePreModel.vytvorPoleVzdialenosti(premenneXij, data.getSpoje(), data.getVzdialenosti()), premenneXij);
-            ucelovaFunkcia.addTerms(FunkciePreModel.vytvorPoleVzdialenostiPreGaraz(premenneUj, data.getSpoje(), data.getVzdialenosti(), data.getGaraze().get(0), true), premenneUj);
-            ucelovaFunkcia.addTerms(FunkciePreModel.vytvorPoleVzdialenostiPreGaraz(premenneVi, data.getSpoje(), data.getVzdialenosti(), data.getGaraze().get(0), false), premenneVi);
+            ucelovaFunkcia.addTerms(FunkciePreModel.vytvorPoleVzdialenosti(premenneXij, data.getSpoje(), data.getKmVzdialenosti()), premenneXij);
+            ucelovaFunkcia.addTerms(FunkciePreModel.vytvorPoleVzdialenostiPreGaraz(premenneUj, data.getSpoje(), data.getKmVzdialenosti(), data.getGaraze().get(0), true), premenneUj);
+            ucelovaFunkcia.addTerms(FunkciePreModel.vytvorPoleVzdialenostiPreGaraz(premenneVi, data.getSpoje(), data.getKmVzdialenosti(), data.getGaraze().get(0), false), premenneVi);
             model.setObjective(ucelovaFunkcia, GRB.MINIMIZE);
 
             GRBLinExpr[] podmienky1 = FunkciePreModel.vytvorPodmienkySucetXijPodlaIaUj(xIJ, uJ, new ArrayList<>(data.getSpoje().values()));
@@ -53,7 +53,7 @@ public class MinPrazdnePrejazdyGaraz {
 
             model.optimize();
 
-            System.out.println("Minimálne prázdne prejazdy s garážou: " + model.get(GRB.DoubleAttr.ObjVal) + " sekúnd");
+            System.out.println("Minimálne prázdne prejazdy s garážou: " + model.get(GRB.DoubleAttr.ObjVal) + " kilometrov");
             List<String> spoje = new ArrayList<>();
             for (GRBVar var : model.getVars()) {
                 if (var.get(GRB.DoubleAttr.X) == 1) {
