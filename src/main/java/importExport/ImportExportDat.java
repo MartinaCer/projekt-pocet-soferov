@@ -13,7 +13,7 @@ import dto.Spoj;
 import dto.Spoj.KlucSpoja;
 import dto.Usek;
 import dto.Zastavka;
-import gurobiModel.VypisyPreModel.SpojGaraz;
+import gurobiModelFunkcie.VypisGaraze.SpojGaraz;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;

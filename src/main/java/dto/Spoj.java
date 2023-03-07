@@ -20,8 +20,8 @@ public class Spoj {
     private final List<Spoj> moznePredosleSpojenia;
     private final List<Spoj> mozneNasledovneSpojenia;
 
-    private Spoj predoslySpoj;
-    private Spoj nasledovnySpoj;
+    private final List<Spoj> moznePredosleZmenySofera;
+    private final List<Spoj> mozneNasledovneZmenySofera;
 
     public Spoj(int id, int linka, Zastavka miestoOdchodu, Zastavka miestoPrichodu,
             LocalTime casOdchodu, LocalTime casPrichodu, int kilometre) {
@@ -33,6 +33,8 @@ public class Spoj {
         this.kilometre = kilometre;
         this.moznePredosleSpojenia = new ArrayList<>();
         this.mozneNasledovneSpojenia = new ArrayList<>();
+        this.moznePredosleZmenySofera = new ArrayList<>();
+        this.mozneNasledovneZmenySofera = new ArrayList<>();
     }
 
     public KlucSpoja getKluc() {
@@ -67,20 +69,12 @@ public class Spoj {
         return mozneNasledovneSpojenia;
     }
 
-    public Spoj getPredoslySpoj() {
-        return predoslySpoj;
+    public List<Spoj> getMoznePredosleZmenySofera() {
+        return moznePredosleZmenySofera;
     }
 
-    public Spoj getNasledovnySpoj() {
-        return nasledovnySpoj;
-    }
-
-    public void setPredoslySpoj(Spoj predoslySpoj) {
-        this.predoslySpoj = predoslySpoj;
-    }
-
-    public void setNasledovnySpoj(Spoj nasledovnySpoj) {
-        this.nasledovnySpoj = nasledovnySpoj;
+    public List<Spoj> getMozneNasledovneZmenySofera() {
+        return mozneNasledovneZmenySofera;
     }
 
     public static class KlucSpoja {

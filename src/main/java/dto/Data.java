@@ -27,7 +27,8 @@ public class Data {
         this.garaze = garaze;
         this.casVzdialenosti = Vzdialenosti.vypocitaj(new ArrayList<>(zastavky.values()), useky, true);
         this.kmVzdialenosti = Vzdialenosti.vypocitaj(new ArrayList<>(zastavky.values()), useky, false);
-        MoznePrepojeniaSpojov.vypocitaj(new ArrayList<>(spoje.values()), casVzdialenosti);
+        MoznePrepojeniaSpojov.vypocitajNasledovne(new ArrayList<>(spoje.values()), casVzdialenosti);
+        MoznePrepojeniaSpojov.vypocitajZmenaSoferov(new ArrayList<>(spoje.values()), casVzdialenosti, garaze.get(0));
     }
 
     public Map<Integer, Zastavka> getZastavky() {
