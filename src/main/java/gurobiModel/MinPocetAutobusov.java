@@ -2,6 +2,7 @@ package gurobiModel;
 
 import gurobiModelFunkcie.Vypis;
 import dto.Data;
+import dto.Spoj;
 import dto.Spoj.KlucSpoja;
 import gurobi.GRB;
 import gurobi.GRBEnv;
@@ -26,19 +27,21 @@ public class MinPocetAutobusov {
         try {
             GRBEnv env = new GRBEnv("minPocetAutobusov.log");
             GRBModel model = new GRBModel(env);
+            
+            List<Spoj> zoznamSpojov = new ArrayList<>(data.getSpoje().values());
 
-            Map<KlucSpoja, Map<KlucSpoja, GRBVar>> premenne = VseobecneFunkcie.vytvorPremenneXij(model, new ArrayList<>(data.getSpoje().values()));
+            Map<KlucSpoja, Map<KlucSpoja, GRBVar>> premenne = VseobecneFunkcie.vytvorPremenneXij(model, zoznamSpojov);
 
             GRBVar[] premenneXij = VseobecneFunkcie.vytvorSucetXij(premenne);
             GRBLinExpr ucelovaFunkcia = new GRBLinExpr();
             ucelovaFunkcia.addTerms(VseobecneFunkcie.vytvorPoleJednotiek(premenneXij.length), premenneXij);
             model.setObjective(ucelovaFunkcia, GRB.MAXIMIZE);
 
-            GRBLinExpr[] podmienky1 = VseobecneFunkcie.vytvorPodmienkySucetXijPodlaI(premenne, new ArrayList<>(data.getSpoje().values()));
+            GRBLinExpr[] podmienky1 = VseobecneFunkcie.vytvorPodmienkySucetXijPodlaI(premenne, zoznamSpojov);
             model.addConstrs(podmienky1, VseobecneFunkcie.vytvorPoleMensiRovny(podmienky1.length),
                     VseobecneFunkcie.vytvorPoleJednotiek(podmienky1.length), VseobecneFunkcie.vytvorNazvyPodmienok(podmienky1.length, "1"));
 
-            GRBLinExpr[] podmienky2 = VseobecneFunkcie.vytvorPodmienkySucetXijPodlaJ(premenne, new ArrayList<>(data.getSpoje().values()));
+            GRBLinExpr[] podmienky2 = VseobecneFunkcie.vytvorPodmienkySucetXijPodlaJ(premenne, zoznamSpojov);
             model.addConstrs(podmienky2, VseobecneFunkcie.vytvorPoleMensiRovny(podmienky2.length),
                     VseobecneFunkcie.vytvorPoleJednotiek(podmienky2.length), VseobecneFunkcie.vytvorNazvyPodmienok(podmienky2.length, "2"));
 

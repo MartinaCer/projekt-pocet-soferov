@@ -29,9 +29,13 @@ public class VseobecneFunkcie {
     }
 
     public static double[] vytvorPoleJednotiek(int pocet) {
+        return vytvorPoleHodnot(pocet, 1);
+    }
+
+    public static double[] vytvorPoleHodnot(int pocet, double hodnota) {
         double[] pole = new double[pocet];
         for (int i = 0; i < pocet; i++) {
-            pole[i] = 1;
+            pole[i] = hodnota;
         }
         return pole;
     }

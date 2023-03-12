@@ -1,8 +1,8 @@
 package gurobiModel;
 
 import gurobiModelFunkcie.Vypis;
-import gurobiModelFunkcie.GarazeFunkcie;
 import dto.Data;
+import dto.Spoj;
 import dto.Spoj.KlucSpoja;
 import gurobi.GRB;
 import gurobi.GRBEnv;
@@ -28,10 +28,12 @@ public class MinPrazdnePrejazdyGaraz {
         try {
             GRBEnv env = new GRBEnv("minPrazdnePrejazdyGaraz.log");
             GRBModel model = new GRBModel(env);
+            
+            List<Spoj> zoznamSpojov = new ArrayList<>(data.getSpoje().values());
 
-            Map<KlucSpoja, Map<KlucSpoja, GRBVar>> xIJ = VseobecneFunkcie.vytvorPremenneXij(model, new ArrayList<>(data.getSpoje().values()));
-            Map<KlucSpoja, GRBVar> uJ = GarazFunkcie.vytvorPremenneUjVi(model, new ArrayList<>(data.getSpoje().values()), "u");
-            Map<KlucSpoja, GRBVar> vI = GarazFunkcie.vytvorPremenneUjVi(model, new ArrayList<>(data.getSpoje().values()), "v");
+            Map<KlucSpoja, Map<KlucSpoja, GRBVar>> xIJ = VseobecneFunkcie.vytvorPremenneXij(model, zoznamSpojov);
+            Map<KlucSpoja, GRBVar> uJ = GarazFunkcie.vytvorPremenneUjVi(model, zoznamSpojov, "u");
+            Map<KlucSpoja, GRBVar> vI = GarazFunkcie.vytvorPremenneUjVi(model, zoznamSpojov, "v");
             model.update();
 
             GRBVar[] premenneXij = VseobecneFunkcie.vytvorSucetXij(xIJ);
@@ -43,11 +45,11 @@ public class MinPrazdnePrejazdyGaraz {
             ucelovaFunkcia.addTerms(GarazFunkcie.vytvorPoleVzdialenostiPreGaraz(premenneVi, data.getSpoje(), data.getKmVzdialenosti(), data.getGaraze().get(0), false, 1), premenneVi);
             model.setObjective(ucelovaFunkcia, GRB.MINIMIZE);
 
-            GRBLinExpr[] podmienky1 = GarazFunkcie.vytvorPodmienkySucetXijPodlaIaUj(xIJ, uJ, new ArrayList<>(data.getSpoje().values()));
+            GRBLinExpr[] podmienky1 = GarazFunkcie.vytvorPodmienkySucetXijPodlaIaUj(xIJ, uJ, zoznamSpojov);
             model.addConstrs(podmienky1, VseobecneFunkcie.vytvorPoleRovny(podmienky1.length),
                     VseobecneFunkcie.vytvorPoleJednotiek(podmienky1.length), VseobecneFunkcie.vytvorNazvyPodmienok(podmienky1.length, "1"));
 
-            GRBLinExpr[] podmienky2 = GarazFunkcie.vytvorPodmienkySucetXijPodlaJaVi(xIJ, vI, new ArrayList<>(data.getSpoje().values()));
+            GRBLinExpr[] podmienky2 = GarazFunkcie.vytvorPodmienkySucetXijPodlaJaVi(xIJ, vI, zoznamSpojov);
             model.addConstrs(podmienky2, VseobecneFunkcie.vytvorPoleRovny(podmienky2.length),
                     VseobecneFunkcie.vytvorPoleJednotiek(podmienky2.length), VseobecneFunkcie.vytvorNazvyPodmienok(podmienky2.length, "2"));
 

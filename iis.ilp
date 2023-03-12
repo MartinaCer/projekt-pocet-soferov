@@ -1,0 +1,11 @@
+\ Model (null)_copy
+\ LP format - for model browsing. Use MPS format to capture full model detail.
+Minimize
+ 
+Subject To
+ 2_46: v_6;505426 = 1
+ 5_46: 45278 v_6;505426 - t_6;505426 <= 41700
+Bounds
+Binaries
+ v_6;505426 t_6;505426
+End

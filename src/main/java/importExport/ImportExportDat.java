@@ -36,7 +36,7 @@ public final class ImportExportDat {
 
     private static final String ZASTAVKY = "/zastavky.csv";
     private static final String USEKY = "/useky.csv";
-    private static final String SPOJE = "/spoje.csv";
+    private static final String SPOJE = "/spoje2.csv";
     private static final String TURNUSY = "turnusy.pdf";
 
     private ImportExportDat() {

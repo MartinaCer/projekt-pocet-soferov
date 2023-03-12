@@ -21,15 +21,13 @@ public class MainTrieda {
     public static void main(String[] args) throws IOException {
         Map<Integer, Zastavka> zastavky = ImportExportDat.nacitajZastavky();
         Data data = new Data(zastavky, ImportExportDat.nacitajUseky(zastavky), ImportExportDat.nacitajSpoje(zastavky), Konstanty.GARAZE);
-        //for (Spoj value : data.getSpoje().values()) {
-        //    System.out.println(value.getMoznePredosleSpojenia().size());
-        //}
-        //MinPocetAutobusov model = new MinPocetAutobusov();
-        //model.optimalizuj(data);
+//        MinPocetAutobusov model = new MinPocetAutobusov();
+//        model.optimalizuj(data);
         //MinPrazdnePrejazdy model = new MinPrazdnePrejazdy();
         //MinPrazdnePrejazdyGaraz model = new MinPrazdnePrejazdyGaraz();
         //MinPrazdnePrejazdyGaraze model = new MinPrazdnePrejazdyGaraze();
         MinPocetSoferov model = new MinPocetSoferov();
-        model.optimalizuj(data, 106);
+//        model.optimalizuj(data, 106);
+        model.optimalizuj(data, 10);
     }
 }
