@@ -1201,3 +1201,51 @@ Solution count 2: 52 47
 
 Optimal solution found (tolerance 1.00e-04)
 Best objective 5.200000000000e+01, best bound 5.200000000000e+01, gap 0.0000%
+
+Gurobi 10.0.0 (win64, Java) logging started Sat Mar 18 10:01:50 2023
+
+Set parameter Username
+Academic license - for non-commercial use only - expires 2023-12-26
+
+Gurobi 10.0.0 (win64, Java) logging started Sat Mar 18 10:04:31 2023
+
+Set parameter Username
+Academic license - for non-commercial use only - expires 2023-12-26
+
+Gurobi 10.0.0 (win64, Java) logging started Sat Mar 18 10:05:02 2023
+
+Set parameter Username
+Academic license - for non-commercial use only - expires 2023-12-26
+Gurobi Optimizer version 10.0.0 build v10.0.0rc2 (win64)
+
+CPU model: Intel(R) Core(TM) i5-8265U CPU @ 1.60GHz, instruction set [SSE2|AVX|AVX2]
+Thread count: 4 physical cores, 8 logical processors, using up to 8 threads
+
+Optimize a model with 120 rows, 1625 columns and 3250 nonzeros
+Model fingerprint: 0xf39cf29e
+Variable types: 0 continuous, 1625 integer (1625 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+00]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+00]
+Found heuristic solution: objective 47.0000000
+Presolve removed 21 rows and 341 columns
+Presolve time: 0.02s
+Presolved: 99 rows, 1284 columns, 2568 nonzeros
+Variable types: 0 continuous, 1284 integer (1284 binary)
+
+Root relaxation: objective 5.200000e+01, 212 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+*    0     0               0      52.0000000   52.00000  0.00%     -    0s
+
+Explored 1 nodes (212 simplex iterations) in 0.03 seconds (0.02 work units)
+Thread count was 8 (of 8 available processors)
+
+Solution count 2: 52 47 
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 5.200000000000e+01, best bound 5.200000000000e+01, gap 0.0000%

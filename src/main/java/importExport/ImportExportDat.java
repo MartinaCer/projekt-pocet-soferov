@@ -13,7 +13,9 @@ import dto.Spoj;
 import dto.Spoj.KlucSpoja;
 import dto.Usek;
 import dto.Zastavka;
-import gurobiModelFunkcie.VypisGaraze.SpojGaraz;
+import gurobiModelVypisy.SmenaSofera;
+import gurobiModelVypisy.SpojSofera;
+import gurobiModelVypisy.VypisGaraze.SpojGaraz;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -23,6 +25,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,8 +39,10 @@ public final class ImportExportDat {
 
     private static final String ZASTAVKY = "/zastavky.csv";
     private static final String USEKY = "/useky.csv";
+//    private static final String SPOJE = "/spoje.csv";
     private static final String SPOJE = "/spoje2.csv";
     private static final String TURNUSY = "turnusy.pdf";
+    private static final String SMENY = "smeny.pdf";
 
     private ImportExportDat() {
     }
@@ -141,6 +146,83 @@ public final class ImportExportDat {
                 tabulka.addCell(spoj.getCasPrichodu().toString());
             }
             document.add(tabulka);
+            poradieTurnusu++;
+        }
+        document.close();
+    }
+
+    public static void vypisSmenyDoPdf(List<List<SmenaSofera>> turnusy) throws FileNotFoundException, DocumentException {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+        Document document = new Document(PageSize.A4.rotate());
+        PdfWriter.getInstance(document, new FileOutputStream(new File(SMENY)));
+        document.open();
+        document.addTitle("Smeny");
+        int poradieTurnusu = 1;
+        for (List<SmenaSofera> turnus : turnusy) {
+            document.add(new Paragraph("Turnus " + poradieTurnusu + " - celkové trvanie "
+                    + LocalTime.ofSecondOfDay(turnus.get(turnus.size() - 1).koniecSmeny() - turnus.get(0).zaciatokSmeny()).format(formatter)));
+            int poradieSmeny = 1;
+            for (SmenaSofera smena : turnus) {
+                document.add(new Paragraph("Smena " + poradieSmeny + " - celkové trvanie " + LocalTime.ofSecondOfDay(smena.trvanieSmeny()).format(formatter)));
+                PdfPTable tabulka = new PdfPTable(7);
+                tabulka.setWidthPercentage(100);
+                tabulka.setSpacingBefore(5f);
+                tabulka.setSpacingAfter(5f);
+                PdfPCell hlavicka = new PdfPCell(new Phrase("Spoj"));
+                hlavicka.setHorizontalAlignment(Element.ALIGN_CENTER);
+                tabulka.addCell(hlavicka);
+                hlavicka = new PdfPCell(new Phrase("Linka"));
+                hlavicka.setHorizontalAlignment(Element.ALIGN_CENTER);
+                tabulka.addCell(hlavicka);
+                hlavicka = new PdfPCell(new Phrase("Miesto odchodu"));
+                hlavicka.setHorizontalAlignment(Element.ALIGN_CENTER);
+                tabulka.addCell(hlavicka);
+                hlavicka = new PdfPCell(new Phrase("Odchod"));
+                hlavicka.setHorizontalAlignment(Element.ALIGN_CENTER);
+                tabulka.addCell(hlavicka);
+                hlavicka = new PdfPCell(new Phrase("Miesto príchodu"));
+                hlavicka.setHorizontalAlignment(Element.ALIGN_CENTER);
+                tabulka.addCell(hlavicka);
+                hlavicka = new PdfPCell(new Phrase("Príchod"));
+                hlavicka.setHorizontalAlignment(Element.ALIGN_CENTER);
+                tabulka.addCell(hlavicka);
+                hlavicka = new PdfPCell(new Phrase("Prestávka"));
+                hlavicka.setHorizontalAlignment(Element.ALIGN_CENTER);
+                tabulka.addCell(hlavicka);
+                tabulka.setHeaderRows(1);
+                Spoj odchod = smena.getSpoje().get(0).getSpoj();
+                Spoj prichod = smena.getSpoje().get(smena.getSpoje().size() - 1).getSpoj();
+                tabulka.addCell("");
+                tabulka.addCell("");
+                tabulka.addCell("Garáž");
+                tabulka.addCell(odchod.getCasOdchodu().minusSeconds(smena.getCestaZgaraze()).format(formatter));
+                Zastavka odchodZ = odchod.getMiestoOdchodu();
+                tabulka.addCell(String.valueOf(odchodZ.getId()) + " - " + odchodZ.getNazov());
+                tabulka.addCell(odchod.getCasOdchodu().format(formatter));
+                tabulka.addCell("");
+                for (SpojSofera spojSofera : smena.getSpoje()) {
+                    Spoj spoj = spojSofera.getSpoj();
+                    tabulka.addCell(String.valueOf(spoj.getKluc().getId()));
+                    tabulka.addCell(String.valueOf(spoj.getKluc().getLinka()));
+                    Zastavka odch = spoj.getMiestoOdchodu();
+                    tabulka.addCell(String.valueOf(odch.getId()) + " - " + odch.getNazov());
+                    tabulka.addCell(spoj.getCasOdchodu().format(formatter));
+                    Zastavka prich = spoj.getMiestoPrichodu();
+                    tabulka.addCell(String.valueOf(prich.getId()) + " - " + prich.getNazov());
+                    tabulka.addCell(spoj.getCasPrichodu().format(formatter));
+                    tabulka.addCell(LocalTime.ofSecondOfDay(spojSofera.getPrestavkaPoSpoji()).format(formatter));
+                }
+                tabulka.addCell("");
+                tabulka.addCell("");
+                Zastavka prichodZ = prichod.getMiestoPrichodu();
+                tabulka.addCell(String.valueOf(prichodZ.getId()) + " - " + prichodZ.getNazov());
+                tabulka.addCell(prichod.getCasPrichodu().format(formatter));
+                tabulka.addCell("Garáž");
+                tabulka.addCell(prichod.getCasPrichodu().plusSeconds(smena.getCestaDoGaraze()).format(formatter));
+                tabulka.addCell("");
+                document.add(tabulka);
+                poradieSmeny++;
+            }
             poradieTurnusu++;
         }
         document.close();

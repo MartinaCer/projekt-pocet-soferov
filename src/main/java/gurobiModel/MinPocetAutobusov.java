@@ -1,6 +1,6 @@
 package gurobiModel;
 
-import gurobiModelFunkcie.Vypis;
+import gurobiModelVypisy.Vypis;
 import dto.Data;
 import dto.Spoj;
 import dto.Spoj.KlucSpoja;

@@ -91,9 +91,10 @@ public class VseobecneFunkcie {
         Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenne = new HashMap<>();
         for (Spoj iSpoj : spoje) {
             Spoj.KlucSpoja iKluc = iSpoj.getKluc();
+            Map<Spoj.KlucSpoja, GRBVar> iMapa = premenne.computeIfAbsent(iKluc, k -> new HashMap<>());
             for (Spoj jSpoj : iSpoj.getMozneNasledovneSpojenia()) {
                 Spoj.KlucSpoja jKluc = jSpoj.getKluc();
-                premenne.computeIfAbsent(iKluc, k -> new HashMap<>()).put(jKluc, model.addVar(0, 1, 0, GRB.BINARY, "x_" + iKluc.toString() + "_" + jKluc.toString()));
+                iMapa.put(jKluc, model.addVar(0, 1, 0, GRB.BINARY, "x_" + iKluc.toString() + "_" + jKluc.toString()));
             }
         }
         return premenne;

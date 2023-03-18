@@ -1,5 +1,6 @@
 package gurobiModel;
 
+import com.itextpdf.text.DocumentException;
 import dto.Data;
 import dto.Spoj;
 import dto.Spoj.KlucSpoja;
@@ -12,7 +13,11 @@ import gurobi.GRBVar;
 import gurobiModelFunkcie.GarazFunkcie;
 import gurobiModelFunkcie.SoferiFunkcie;
 import gurobiModelFunkcie.VseobecneFunkcie;
-import gurobiModelFunkcie.VypisSoferi;
+import gurobiModelVypisy.SmenaSofera;
+import gurobiModelVypisy.VypisSoferi;
+import gurobiModelVypisy.VypisSoferi.SpojSofer;
+import importExport.ImportExportDat;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -68,12 +73,15 @@ public class MinPocetSoferov {
                     VseobecneFunkcie.vytvorPoleHodnot(podmienky3.length, Konstanty.MAX_DOBA_JAZDY), VseobecneFunkcie.vytvorNazvyPodmienok(podmienky3.length, "3"));
 
             SoferiFunkcie.pridajPodmienkyTjPreXij(model, xIJ, tJ, data.getCasVzdialenosti(), zoznamSpojov, "4");
-            SoferiFunkcie.pridajPodmienkyTjPreVi(model, vI, tJ, data.getCasVzdialenosti(), idGaraze, zoznamSpojov, "5");
+            SoferiFunkcie.pridajPodmienkyTjPreUj(model, uJ, tJ, data.getCasVzdialenosti(), idGaraze, zoznamSpojov, "5");
+            SoferiFunkcie.pridajPodmienkyYijNieJeUj(model, uJ, yIJ, zoznamSpojov, "6");
+            SoferiFunkcie.pridajPodmienkyYijNieJeVi(model, vI, yIJ, zoznamSpojov, "7");
+            SoferiFunkcie.pridajPodmienkyTjPreYij(model, yIJ, tJ, data.getCasVzdialenosti(), idGaraze, zoznamSpojov, "8");
 
             GRBLinExpr podmienkaPocetAutobusov = new GRBLinExpr();
             podmienkaPocetAutobusov.addTerms(VseobecneFunkcie.vytvorPoleJednotiek(premenneXij.length), premenneXij);
             podmienkaPocetAutobusov.addTerms(VseobecneFunkcie.vytvorPoleJednotiek(premenneYij.length), premenneYij);
-            model.addConstr(podmienkaPocetAutobusov, GRB.EQUAL, data.getSpoje().size() - pocetAutobusov, "6");
+            model.addConstr(podmienkaPocetAutobusov, GRB.EQUAL, data.getSpoje().size() - pocetAutobusov, "9");
 
 //            model.computeIIS();
 //            model.write("iis.ilp");
@@ -84,8 +92,7 @@ public class MinPocetSoferov {
             model.set(GRB.IntParam.AggFill, 100);
             model.set(GRB.DoubleParam.TimeLimit, 100);
             model.optimize();
-            System.out.println("riešenie: " + model.get(GRB.IntAttr.SolCount));
-//            System.out.println("Minimálna cena : " + model.get(GRB.DoubleAttr.ObjVal) + " eur");
+            System.out.println("Minimálna cena : " + model.get(GRB.DoubleAttr.ObjVal) + " eur");
             List<String> spoje = new ArrayList<>();
             Map<KlucSpoja, Double> tHodnoty = new HashMap<>();
             int pocetX = 0;
@@ -100,6 +107,7 @@ public class MinPocetSoferov {
                     if (v.charAt(0) == 'y') {
                         spoje.add(v);
                         pocetY++;
+                        System.out.println(v);
                     }
                 }
                 if (var.get(GRB.StringAttr.VarName).charAt(0) == 't') {
@@ -110,7 +118,14 @@ public class MinPocetSoferov {
             }
             System.out.println("Počet x: " + pocetX);
             System.out.println("Počet y: " + pocetY);
-            VypisSoferi.vypisTurnusy(VypisSoferi.vytvorTurnusy(spoje, data.getSpoje()), tHodnoty, data.getCasVzdialenosti(), idGaraze);
+            List<List<SpojSofer>> turnusy = VypisSoferi.vytvorTurnusy(spoje, data.getSpoje());
+            List<List<SmenaSofera>> smeny = VypisSoferi.vytvorSmeny(turnusy, data.getCasVzdialenosti(), idGaraze);
+            VypisSoferi.vypisTurnusy(turnusy, tHodnoty, data.getCasVzdialenosti(), idGaraze);
+            try {
+                ImportExportDat.vypisSmenyDoPdf(smeny);
+            } catch (FileNotFoundException | DocumentException ex) {
+                Logger.getLogger(MinPocetSoferov.class.getName()).log(Level.SEVERE, null, ex);
+            }
             model.dispose();
             env.dispose();
         } catch (GRBException ex) {

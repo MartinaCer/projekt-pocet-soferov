@@ -52,9 +52,10 @@ public class SoferiFunkcie {
         Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenne = new HashMap<>();
         for (Spoj iSpoj : spoje) {
             Spoj.KlucSpoja iKluc = iSpoj.getKluc();
+            Map<Spoj.KlucSpoja, GRBVar> iMapa = premenne.computeIfAbsent(iKluc, k -> new HashMap<>());
             for (Spoj jSpoj : iSpoj.getMozneNasledovneZmenySofera()) {
                 Spoj.KlucSpoja jKluc = jSpoj.getKluc();
-                premenne.computeIfAbsent(iKluc, k -> new HashMap<>()).put(jKluc, model.addVar(0, 1, 0, GRB.BINARY, "y_" + iKluc.toString() + "_" + jKluc.toString()));
+                iMapa.put(jKluc, model.addVar(0, 1, 0, GRB.BINARY, "y_" + iKluc.toString() + "_" + jKluc.toString()));
             }
         }
         return premenne;
@@ -74,27 +75,27 @@ public class SoferiFunkcie {
         return vytvorPolePremennych(retPremenne);
     }
 
-    public static GRBLinExpr[] vytvorPodmienkySucetXijYijPodlaIaUj(Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenneXij,
-            Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenneYij, Map<Spoj.KlucSpoja, GRBVar> premenneUj, List<Spoj> spoje) {
+    public static GRBLinExpr[] vytvorPodmienkySucetXijYijPodlaJaVi(Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenneXij,
+            Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenneYij, Map<Spoj.KlucSpoja, GRBVar> premenneVi, List<Spoj> spoje) {
         List<GRBLinExpr> podmienky = new ArrayList<>();
         for (Spoj iSpoj : spoje) {
             GRBLinExpr podmienka = new GRBLinExpr();
             iSpoj.getMozneNasledovneSpojenia().forEach(jSpoj -> podmienka.addTerm(1, premenneXij.get(iSpoj.getKluc()).get(jSpoj.getKluc())));
             iSpoj.getMozneNasledovneZmenySofera().forEach(jSpoj -> podmienka.addTerm(1, premenneYij.get(iSpoj.getKluc()).get(jSpoj.getKluc())));
-            podmienka.addTerm(1, premenneUj.get(iSpoj.getKluc()));
+            podmienka.addTerm(1, premenneVi.get(iSpoj.getKluc()));
             podmienky.add(podmienka);
         }
         return VseobecneFunkcie.vytvorPolePodmienok(podmienky);
     }
 
-    public static GRBLinExpr[] vytvorPodmienkySucetXijYijPodlaJaVi(Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenneXij,
-            Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenneYij, Map<Spoj.KlucSpoja, GRBVar> premenneVi, List<Spoj> spoje) {
+    public static GRBLinExpr[] vytvorPodmienkySucetXijYijPodlaIaUj(Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenneXij,
+            Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenneYij, Map<Spoj.KlucSpoja, GRBVar> premenneUj, List<Spoj> spoje) {
         List<GRBLinExpr> podmienky = new ArrayList<>();
         for (Spoj jSpoj : spoje) {
             GRBLinExpr podmienka = new GRBLinExpr();
             jSpoj.getMoznePredosleSpojenia().forEach(iSpoj -> podmienka.addTerm(1, premenneXij.get(iSpoj.getKluc()).get(jSpoj.getKluc())));
             jSpoj.getMoznePredosleZmenySofera().forEach(iSpoj -> podmienka.addTerm(1, premenneYij.get(iSpoj.getKluc()).get(jSpoj.getKluc())));
-            podmienka.addTerm(1, premenneVi.get(jSpoj.getKluc()));
+            podmienka.addTerm(1, premenneUj.get(jSpoj.getKluc()));
             podmienky.add(podmienka);
         }
         return VseobecneFunkcie.vytvorPolePodmienok(podmienky);
@@ -122,7 +123,6 @@ public class SoferiFunkcie {
                 GRBVar xIJ = premenneXij.get(iSpoj.getKluc()).get(jSpoj.getKluc());
                 GRBLinExpr podmienka = new GRBLinExpr();
                 podmienka.addTerm(1, premenneTj.get(iSpoj.getKluc()));
-                //podmienka.addTerm(vzdialenosti.get(iSpoj.getMiestoPrichodu().getId()).get(jSpoj.getMiestoOdchodu().getId()) + Konstanty.REZERVA, xIJ);
                 podmienka.addTerm(jSpoj.getCasOdchodu().toSecondOfDay() - iSpoj.getCasPrichodu().toSecondOfDay(), xIJ);
                 podmienka.addTerm(K, xIJ);
                 podmienka.addConstant(casSpojaJ - K);
@@ -132,19 +132,67 @@ public class SoferiFunkcie {
         }
     }
 
-    public static void pridajPodmienkyTjPreVi(GRBModel model, Map<Spoj.KlucSpoja, GRBVar> premenneVi,
+    public static void pridajPodmienkyTjPreUj(GRBModel model, Map<Spoj.KlucSpoja, GRBVar> premenneUj,
             Map<Spoj.KlucSpoja, GRBVar> premenneTj, Map<Integer, Map<Integer, Integer>> vzdialenosti,
             int idGaraze, List<Spoj> spoje, String cisloPodmienky) throws GRBException {
         int poradiePodmienky = 1;
         Map<Integer, Integer> vzdialenostiGaraz = vzdialenosti.get(idGaraze);
         for (Spoj spoj : spoje) {
-            GRBVar vI = premenneVi.get(spoj.getKluc());
+            GRBVar uJ = premenneUj.get(spoj.getKluc());
             GRBLinExpr podmienka = new GRBLinExpr();
-            //podmienka.addTerm(vzdialenostiGaraz.get(spoj.getMiestoOdchodu().getId()), vI);
-            podmienka.addTerm(K, vI);
-            //podmienka.addConstant(spoj.getCasPrichodu().toSecondOfDay() - spoj.getCasOdchodu().toSecondOfDay() - K);
+            podmienka.addTerm(K, uJ);
             podmienka.addConstant(vzdialenostiGaraz.get(spoj.getMiestoOdchodu().getId()) + spoj.getCasPrichodu().toSecondOfDay() - spoj.getCasOdchodu().toSecondOfDay() - K);
             model.addConstr(podmienka, GRB.LESS_EQUAL, premenneTj.get(spoj.getKluc()), cisloPodmienky + "_" + poradiePodmienky);
+            poradiePodmienky++;
+        }
+    }
+
+    public static void pridajPodmienkyTjPreYij(GRBModel model, Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenneYij,
+            Map<Spoj.KlucSpoja, GRBVar> premenneTj, Map<Integer, Map<Integer, Integer>> vzdialenosti,
+            int idGaraze, List<Spoj> spoje, String cisloPodmienky) throws GRBException {
+        int poradiePodmienky = 1;
+        Map<Integer, Integer> vzdialenostiGaraz = vzdialenosti.get(idGaraze);
+        for (Spoj jSpoj : spoje) {
+            for (Spoj iSpoj : jSpoj.getMoznePredosleZmenySofera()) {
+                GRBVar yIJ = premenneYij.get(iSpoj.getKluc()).get(jSpoj.getKluc());
+                GRBLinExpr podmienka = new GRBLinExpr();
+                podmienka.addTerm(K, yIJ);
+                podmienka.addConstant(vzdialenostiGaraz.get(jSpoj.getMiestoOdchodu().getId()) + jSpoj.getCasPrichodu().toSecondOfDay() - jSpoj.getCasOdchodu().toSecondOfDay() - K);
+                model.addConstr(podmienka, GRB.LESS_EQUAL, premenneTj.get(jSpoj.getKluc()), cisloPodmienky + "_" + poradiePodmienky);
+                poradiePodmienky++;
+            }
+        }
+    }
+
+    public static void pridajPodmienkyYijNieJeUj(GRBModel model, Map<Spoj.KlucSpoja, GRBVar> premenneUj,
+            Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenneYij, List<Spoj> spoje, String cisloPodmienky) throws GRBException {
+        int poradiePodmienky = 1;
+        for (Spoj spoj : spoje) {
+            GRBLinExpr podmienka = new GRBLinExpr();
+            podmienka.addConstant(Integer.MAX_VALUE);
+            podmienka.addTerm(-Integer.MAX_VALUE, premenneUj.get(spoj.getKluc()));
+            GRBLinExpr sucet = new GRBLinExpr();
+            premenneYij.get(spoj.getKluc()).values().forEach(spoj2 -> sucet.addTerm(1, spoj2));
+            model.addConstr(podmienka, GRB.GREATER_EQUAL, sucet, cisloPodmienky + "_" + poradiePodmienky);
+            poradiePodmienky++;
+        }
+    }
+
+    public static void pridajPodmienkyYijNieJeVi(GRBModel model, Map<Spoj.KlucSpoja, GRBVar> premenneVi,
+            Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenneYij, List<Spoj> spoje, String cisloPodmienky) throws GRBException {
+        int poradiePodmienky = 1;
+        for (Spoj spoj : spoje) {
+            GRBLinExpr podmienka = new GRBLinExpr();
+            podmienka.addConstant(Integer.MAX_VALUE);
+            podmienka.addTerm(-Integer.MAX_VALUE, premenneVi.get(spoj.getKluc()));
+            GRBLinExpr sucet = new GRBLinExpr();
+            for (Map.Entry<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> yIJ : premenneYij.entrySet()) {
+                GRBVar premenna = yIJ.getValue().get(spoj.getKluc());
+                if (premenna != null) {
+                    sucet.addTerm(1, premenna);
+                }
+            }
+            model.addConstr(podmienka, GRB.GREATER_EQUAL, sucet, cisloPodmienky + "_" + poradiePodmienky);
             poradiePodmienky++;
         }
     }

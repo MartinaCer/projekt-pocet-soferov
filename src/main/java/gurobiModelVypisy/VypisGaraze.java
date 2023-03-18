@@ -1,4 +1,4 @@
-package gurobiModelFunkcie;
+package gurobiModelVypisy;
 
 import dto.Spoj;
 import java.util.ArrayList;
