@@ -43,7 +43,8 @@ public class MinPocetSoferov {
             Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> yIJ = SoferiFunkcie.vytvorPremenneYij(model, zoznamSpojov);
             Map<Spoj.KlucSpoja, GRBVar> uJ = GarazFunkcie.vytvorPremenneUjVi(model, zoznamSpojov, "u");
             Map<Spoj.KlucSpoja, GRBVar> vI = GarazFunkcie.vytvorPremenneUjVi(model, zoznamSpojov, "v");
-            Map<Spoj.KlucSpoja, GRBVar> tJ = SoferiFunkcie.vytvorPremenneTj(model, zoznamSpojov);
+            Map<Spoj.KlucSpoja, GRBVar> sJ = SoferiFunkcie.vytvorPremenneSjTj(model, zoznamSpojov, "s");
+            Map<Spoj.KlucSpoja, GRBVar> tJ = SoferiFunkcie.vytvorPremenneSjTj(model, zoznamSpojov, "u");
             model.update();
 
             GRBVar[] premenneXij = VseobecneFunkcie.vytvorSucetXij(xIJ);
@@ -67,20 +68,27 @@ public class MinPocetSoferov {
             model.addConstrs(podmienky2, VseobecneFunkcie.vytvorPoleRovny(podmienky2.length),
                     VseobecneFunkcie.vytvorPoleJednotiek(podmienky2.length), VseobecneFunkcie.vytvorNazvyPodmienok(podmienky2.length, "2"));
 
-            GRBLinExpr[] podmienky3 = SoferiFunkcie.vytvorPodmienkyTjGaraz(tJ, data.getCasVzdialenosti(), idGaraze, zoznamSpojov);
+            GRBLinExpr[] podmienky3 = SoferiFunkcie.vytvorPodmienkySjTjGaraz(sJ, data.getCasVzdialenosti(), idGaraze, zoznamSpojov);
             model.addConstrs(podmienky3, VseobecneFunkcie.vytvorPoleMensiRovny(podmienky3.length),
-                    VseobecneFunkcie.vytvorPoleHodnot(podmienky3.length, Konstanty.MAX_DOBA_JAZDY), VseobecneFunkcie.vytvorNazvyPodmienok(podmienky3.length, "3"));
+                    VseobecneFunkcie.vytvorPoleHodnot(podmienky3.length, Konstanty.MAX_DOBA_SMENY), VseobecneFunkcie.vytvorNazvyPodmienok(podmienky3.length, "3"));
 
-            SoferiFunkcie.pridajPodmienkyTjPreXij(model, xIJ, tJ, data.getCasVzdialenosti(), zoznamSpojov, "4");
-            SoferiFunkcie.pridajPodmienkyTjPreUj(model, uJ, tJ, data.getCasVzdialenosti(), idGaraze, zoznamSpojov, "5");
-            SoferiFunkcie.pridajPodmienkyYijNieJeUj(model, uJ, yIJ, zoznamSpojov, "6");
-            SoferiFunkcie.pridajPodmienkyYijNieJeVi(model, vI, yIJ, zoznamSpojov, "7");
-            SoferiFunkcie.pridajPodmienkyTjPreYij(model, yIJ, tJ, data.getCasVzdialenosti(), idGaraze, zoznamSpojov, "8");
+            GRBLinExpr[] podmienky4 = SoferiFunkcie.vytvorPodmienkySjTjGaraz(tJ, data.getCasVzdialenosti(), idGaraze, zoznamSpojov);
+            model.addConstrs(podmienky4, VseobecneFunkcie.vytvorPoleMensiRovny(podmienky4.length),
+                    VseobecneFunkcie.vytvorPoleHodnot(podmienky4.length, Konstanty.MAX_DOBA_JAZDY), VseobecneFunkcie.vytvorNazvyPodmienok(podmienky4.length, "4"));
+
+            SoferiFunkcie.pridajPodmienkySjTjPreXij(model, xIJ, sJ, data.getCasVzdialenosti(), zoznamSpojov, "5", true);
+            SoferiFunkcie.pridajPodmienkySjTjPreXij(model, xIJ, tJ, data.getCasVzdialenosti(), zoznamSpojov, "6", false);
+            SoferiFunkcie.pridajPodmienkySjTjPreYij(model, yIJ, sJ, data.getCasVzdialenosti(), idGaraze, zoznamSpojov, "7");
+            SoferiFunkcie.pridajPodmienkySjTjPreYij(model, yIJ, tJ, data.getCasVzdialenosti(), idGaraze, zoznamSpojov, "8");
+            SoferiFunkcie.pridajPodmienkySjTjPreUj(model, uJ, sJ, data.getCasVzdialenosti(), idGaraze, zoznamSpojov, "9");
+            SoferiFunkcie.pridajPodmienkySjTjPreUj(model, uJ, tJ, data.getCasVzdialenosti(), idGaraze, zoznamSpojov, "10");
+            SoferiFunkcie.pridajPodmienkyYijNieJeUj(model, uJ, yIJ, zoznamSpojov, "11");
+            SoferiFunkcie.pridajPodmienkyYijNieJeVi(model, vI, yIJ, zoznamSpojov, "12");
 
             GRBLinExpr podmienkaPocetAutobusov = new GRBLinExpr();
             podmienkaPocetAutobusov.addTerms(VseobecneFunkcie.vytvorPoleJednotiek(premenneXij.length), premenneXij);
             podmienkaPocetAutobusov.addTerms(VseobecneFunkcie.vytvorPoleJednotiek(premenneYij.length), premenneYij);
-            model.addConstr(podmienkaPocetAutobusov, GRB.EQUAL, data.getSpoje().size() - pocetAutobusov, "9");
+            model.addConstr(podmienkaPocetAutobusov, GRB.EQUAL, data.getSpoje().size() - pocetAutobusov, "13");
 
 //            model.computeIIS();
 //            model.write("iis.ilp");
@@ -138,7 +146,7 @@ public class MinPocetSoferov {
                         for (int i = 0; i < smena.size() - 1; i++) {
                             podmienka.addTerm(1, xIJ.get(smena.get(i).getSpoj().getKluc()).get(smena.get(i + 1).getSpoj().getKluc()));
                         }
-                        model.addConstr(podmienka, GRB.LESS_EQUAL, smena.size() - 2, "10_" + poradiePodmienky);
+                        model.addConstr(podmienka, GRB.LESS_EQUAL, smena.size() - 2, "14_" + poradiePodmienky);
                         poradiePodmienky++;
                     }
                     model.optimize();

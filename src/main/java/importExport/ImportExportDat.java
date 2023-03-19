@@ -163,7 +163,8 @@ public final class ImportExportDat {
                     + LocalTime.ofSecondOfDay(turnus.get(turnus.size() - 1).koniecSmeny() - turnus.get(0).zaciatokSmeny()).format(formatter)));
             int poradieSmeny = 1;
             for (SmenaSofera smena : turnus) {
-                document.add(new Paragraph("Smena " + poradieSmeny + " - celkové trvanie " + LocalTime.ofSecondOfDay(smena.trvanieSmeny()).format(formatter)));
+                document.add(new Paragraph("Smena " + poradieSmeny + " - trvanie smeny " + LocalTime.ofSecondOfDay(smena.trvanieSmeny()).format(formatter)
+                        + " - trvanie jazdy " + LocalTime.ofSecondOfDay(smena.trvanieJazdy()).format(formatter)));
                 PdfPTable tabulka = new PdfPTable(7);
                 tabulka.setWidthPercentage(100);
                 tabulka.setSpacingBefore(5f);

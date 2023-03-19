@@ -3,6 +3,7 @@ package gurobiModelVypisy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import konfiguracia.Konstanty;
 import static konfiguracia.Konstanty.BEZ_PRESTAVKY;
 import static konfiguracia.Konstanty.MIN_PRESTAVKA;
 import static konfiguracia.Konstanty.MIN_SUCET_PRESTAVOK;
@@ -45,6 +46,15 @@ public class SmenaSofera {
 
     public int trvanieSmeny() {
         return koniecSmeny() - zaciatokSmeny();
+    }
+
+    public int trvanieJazdy() {
+        int trvanie = cestaZgaraze + cestaDoGaraze + (Konstanty.REZERVA * (spoje.size() - 1));
+        for (SpojSofera spoj : spoje) {
+            trvanie += spoj.getSpoj().getCasPrichodu().toSecondOfDay() - spoj.getSpoj().getCasOdchodu().toSecondOfDay();
+            trvanie += spoj.getPrazdnyPrejazdPoSpoji();
+        }
+        return trvanie;
     }
 
     public List<SpojSofera> porusujePrestavku() {
