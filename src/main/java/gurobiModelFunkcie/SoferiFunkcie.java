@@ -19,7 +19,7 @@ import konfiguracia.Konstanty;
  */
 public class SoferiFunkcie {
 
-    private static final int K = (int) (Konstanty.MAX_DOBA_JAZDY * 1.2);
+    private static final int K = (int) (Konstanty.MAX_DOBA_JAZDY > Konstanty.MAX_DOBA_SMENY ? Konstanty.MAX_DOBA_JAZDY : Konstanty.MAX_DOBA_SMENY * 1.2);
 
     private SoferiFunkcie() {
     }
@@ -64,7 +64,7 @@ public class SoferiFunkcie {
     public static Map<Spoj.KlucSpoja, GRBVar> vytvorPremenneSjTj(GRBModel model, List<Spoj> spoje, String meno) throws GRBException {
         Map<Spoj.KlucSpoja, GRBVar> premenne = new HashMap<>();
         for (Spoj spoj : spoje) {
-            premenne.put(spoj.getKluc(), model.addVar(0, Konstanty.MAX_DOBA_JAZDY, 0, GRB.CONTINUOUS, meno + "_" + spoj.getKluc().toString()));
+            premenne.put(spoj.getKluc(), model.addVar(0, meno.equals("s") ? Konstanty.MAX_DOBA_SMENY : Konstanty.MAX_DOBA_JAZDY, 0, GRB.CONTINUOUS, meno + "_" + spoj.getKluc().toString()));
         }
         return premenne;
     }

@@ -44,7 +44,7 @@ public class MinPocetSoferov {
             Map<Spoj.KlucSpoja, GRBVar> uJ = GarazFunkcie.vytvorPremenneUjVi(model, zoznamSpojov, "u");
             Map<Spoj.KlucSpoja, GRBVar> vI = GarazFunkcie.vytvorPremenneUjVi(model, zoznamSpojov, "v");
             Map<Spoj.KlucSpoja, GRBVar> sJ = SoferiFunkcie.vytvorPremenneSjTj(model, zoznamSpojov, "s");
-            Map<Spoj.KlucSpoja, GRBVar> tJ = SoferiFunkcie.vytvorPremenneSjTj(model, zoznamSpojov, "u");
+            Map<Spoj.KlucSpoja, GRBVar> tJ = SoferiFunkcie.vytvorPremenneSjTj(model, zoznamSpojov, "t");
             model.update();
 
             GRBVar[] premenneXij = VseobecneFunkcie.vytvorSucetXij(xIJ);
