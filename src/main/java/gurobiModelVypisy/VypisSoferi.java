@@ -126,7 +126,7 @@ public class VypisSoferi {
         return smeny;
     }
 
-    public static void vypisTurnusy(List<List<SpojSofer>> turnusy, Map<KlucSpoja, Double> tHodnoty, Map<Integer, Map<Integer, Integer>> vzdialenosti, int idGaraze) {
+    public static void vypisTurnusy(List<List<SpojSofer>> turnusy, Map<Integer, Map<Integer, Integer>> vzdialenosti, int idGaraze) {
         System.out.println("Turnusy:");
         for (int i = 0; i < turnusy.size(); i++) {
             String turnus = i + 1 + ": jazda z garáže " + vzdialenosti.get(idGaraze).get(turnusy.get(i).get(0).getSpoj().getMiestoOdchodu().getId()) + " -> ";
@@ -137,8 +137,7 @@ public class VypisSoferi {
                         + " -> nový šofér -> jazda z garáže " + vzdialenosti.get(idGaraze).get(spoj.spoj.getMiestoOdchodu().getId()) + " -> "
                         : "")
                         + spoj.spoj.getKluc().toString()
-                        + "(" + spoj.spoj.getCasOdchodu() + ";" + spoj.spoj.getCasPrichodu()
-                        + ") tHodnota-" + tHodnoty.get(spoj.spoj.getKluc()) + " -> ";
+                        + "(" + spoj.spoj.getCasOdchodu() + ";" + spoj.spoj.getCasPrichodu() + " -> ";
             }
             turnus += "jazda do garáže " + vzdialenosti.get(turnusy.get(i).get(turnusy.get(i).size() - 1).getSpoj().getMiestoPrichodu().getId()).get(idGaraze);
             System.out.println(turnus);

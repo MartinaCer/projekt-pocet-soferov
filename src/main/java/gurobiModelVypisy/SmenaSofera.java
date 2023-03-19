@@ -1,6 +1,7 @@
 package gurobiModelVypisy;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import static konfiguracia.Konstanty.BEZ_PRESTAVKY;
 import static konfiguracia.Konstanty.MIN_PRESTAVKA;
@@ -33,11 +34,11 @@ public class SmenaSofera {
     public List<SpojSofera> getSpoje() {
         return spoje;
     }
-    
+
     public int zaciatokSmeny() {
         return spoje.get(0).getSpoj().getCasOdchodu().toSecondOfDay() - cestaZgaraze;
     }
-    
+
     public int koniecSmeny() {
         return spoje.get(spoje.size() - 1).getSpoj().getCasPrichodu().toSecondOfDay() + cestaDoGaraze;
     }
@@ -46,39 +47,34 @@ public class SmenaSofera {
         return koniecSmeny() - zaciatokSmeny();
     }
 
-    public boolean splnaPrestavku() {
-        int prestavka = 0;
-        int prejdenych = cestaZgaraze + trvanieSpoja(spoje.get(0));
-        if (prejdenych > BEZ_PRESTAVKY) {
-            return false;
-        }
-        if (spoje.get(0).getPrestavkaPoSpoji() > MIN_PRESTAVKA) {
-            prestavka += spoje.get(0).getPrestavkaPoSpoji();
-        }
-        if (prestavka >= MIN_SUCET_PRESTAVOK) {
-            prestavka = 0;
-            prejdenych = 0;
-        }
-        if (spoje.size() > 2) {
-            for (int i = 1; i < spoje.size() - 1; i++) {
-                prejdenych += trvanieSpoja(spoje.get(i));
-                if (prejdenych > BEZ_PRESTAVKY) {
-                    return false;
+    public List<SpojSofera> porusujePrestavku() {
+        List<SpojSofera> zoznam = new ArrayList<>();
+        for (int i = 0; i < spoje.size() - 1; i++) {
+            int prestavka = spoje.get(i).getPrestavkaPoSpoji() >= MIN_PRESTAVKA
+                    ? spoje.get(i).getPrestavkaPoSpoji()
+                    : 0;
+            int zaciatok = spoje.get(i).getSpoj().getCasOdchodu().toSecondOfDay();
+            if (i == 0) {
+                zaciatok -= cestaZgaraze;
+            }
+            zoznam.clear();
+            zoznam.add(spoje.get(i));
+            for (int j = i + 1; j < spoje.size(); j++) {
+                SpojSofera spoj = spoje.get(j);
+                zoznam.add(spoj);
+                int prichod = j == spoje.size() - 1
+                        ? spoj.getSpoj().getCasPrichodu().toSecondOfDay() + cestaDoGaraze
+                        : spoj.getSpoj().getCasPrichodu().toSecondOfDay();
+                if (prichod - zaciatok > BEZ_PRESTAVKY) {
+                    if (prestavka < MIN_SUCET_PRESTAVOK) {
+                        return zoznam;
+                    }
+                    break;
                 }
-                if (spoje.get(i).getPrestavkaPoSpoji() > MIN_PRESTAVKA) {
-                    prestavka += spoje.get(0).getPrestavkaPoSpoji();
-                }
-                if (prestavka >= MIN_SUCET_PRESTAVOK) {
-                    prestavka = 0;
-                    prejdenych = 0;
-                }
+                prestavka += spoj.getPrestavkaPoSpoji();
             }
         }
-        prejdenych += cestaZgaraze;
-        return prejdenych <= BEZ_PRESTAVKY;
+        return Collections.emptyList();
     }
 
-    private int trvanieSpoja(SpojSofera spoj) {
-        return spoj.getSpoj().getCasPrichodu().toSecondOfDay() - spoj.getSpoj().getCasOdchodu().toSecondOfDay();
-    }
 }

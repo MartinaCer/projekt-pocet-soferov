@@ -3,7 +3,6 @@ package gurobiModel;
 import com.itextpdf.text.DocumentException;
 import dto.Data;
 import dto.Spoj;
-import dto.Spoj.KlucSpoja;
 import gurobi.GRB;
 import gurobi.GRBEnv;
 import gurobi.GRBException;
@@ -14,12 +13,12 @@ import gurobiModelFunkcie.GarazFunkcie;
 import gurobiModelFunkcie.SoferiFunkcie;
 import gurobiModelFunkcie.VseobecneFunkcie;
 import gurobiModelVypisy.SmenaSofera;
+import gurobiModelVypisy.SpojSofera;
 import gurobiModelVypisy.VypisSoferi;
 import gurobiModelVypisy.VypisSoferi.SpojSofer;
 import importExport.ImportExportDat;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -90,37 +89,65 @@ public class MinPocetSoferov {
             model.set(GRB.IntParam.Method, 0);
             model.set(GRB.IntParam.BranchDir, -1);
             model.set(GRB.IntParam.AggFill, 100);
-            model.set(GRB.DoubleParam.TimeLimit, 100);
+            model.set(GRB.DoubleParam.TimeLimit, 10);
             model.optimize();
-            System.out.println("Minimálna cena : " + model.get(GRB.DoubleAttr.ObjVal) + " eur");
             List<String> spoje = new ArrayList<>();
-            Map<KlucSpoja, Double> tHodnoty = new HashMap<>();
             int pocetX = 0;
             int pocetY = 0;
-            for (GRBVar var : model.getVars()) {
-                if (var.get(GRB.DoubleAttr.X) == 1) {
-                    String v = var.get(GRB.StringAttr.VarName);
-                    if (v.charAt(0) == 'x') {
-                        spoje.add(v);
-                        pocetX++;
-                    }
-                    if (v.charAt(0) == 'y') {
-                        spoje.add(v);
-                        pocetY++;
-                        System.out.println(v);
+            List<List<SpojSofer>> turnusy = null;
+            List<List<SmenaSofera>> smeny = null;
+            boolean porusujePrestavky = true;
+            while (porusujePrestavky) {
+                List<List<SpojSofera>> zlePrestavky = new ArrayList<>();
+                porusujePrestavky = false;
+                pocetX = 0;
+                pocetY = 0;
+                spoje.clear();
+                for (GRBVar var : model.getVars()) {
+                    if (var.get(GRB.DoubleAttr.X) == 1) {
+                        String v = var.get(GRB.StringAttr.VarName);
+                        if (v.charAt(0) == 'x') {
+                            spoje.add(v);
+                            pocetX++;
+                        }
+                        if (v.charAt(0) == 'y') {
+                            spoje.add(v);
+                            pocetY++;
+                        }
                     }
                 }
-                if (var.get(GRB.StringAttr.VarName).charAt(0) == 't') {
-                    String[] pole = var.get(GRB.StringAttr.VarName).split("_");
-                    String[] spoj = pole[1].split(";");
-                    tHodnoty.put(new KlucSpoja(Integer.valueOf(spoj[0]), Integer.valueOf(spoj[1])), var.get(GRB.DoubleAttr.X));
+                turnusy = VypisSoferi.vytvorTurnusy(spoje, data.getSpoje());
+                smeny = VypisSoferi.vytvorSmeny(turnusy, data.getCasVzdialenosti(), idGaraze);
+                for (List<SmenaSofera> turnus : smeny) {
+                    boolean turnusSplna = true;
+                    for (SmenaSofera smena : turnus) {
+                        List<SpojSofera> chybne = smena.porusujePrestavku();
+                        if (!chybne.isEmpty()) {
+                            turnusSplna = false;
+                            zlePrestavky.add(chybne);
+                        }
+                    }
+                    if (!turnusSplna) {
+                        porusujePrestavky = true;
+                    }
+                }
+                if (!zlePrestavky.isEmpty()) {
+                    int poradiePodmienky = 1;
+                    for (List<SpojSofera> smena : zlePrestavky) {
+                        GRBLinExpr podmienka = new GRBLinExpr();
+                        for (int i = 0; i < smena.size() - 1; i++) {
+                            podmienka.addTerm(1, xIJ.get(smena.get(i).getSpoj().getKluc()).get(smena.get(i + 1).getSpoj().getKluc()));
+                        }
+                        model.addConstr(podmienka, GRB.LESS_EQUAL, smena.size() - 2, "10_" + poradiePodmienky);
+                        poradiePodmienky++;
+                    }
+                    model.optimize();
                 }
             }
+            System.out.println("Minimálna cena : " + model.get(GRB.DoubleAttr.ObjVal) + " eur");
             System.out.println("Počet x: " + pocetX);
             System.out.println("Počet y: " + pocetY);
-            List<List<SpojSofer>> turnusy = VypisSoferi.vytvorTurnusy(spoje, data.getSpoje());
-            List<List<SmenaSofera>> smeny = VypisSoferi.vytvorSmeny(turnusy, data.getCasVzdialenosti(), idGaraze);
-            VypisSoferi.vypisTurnusy(turnusy, tHodnoty, data.getCasVzdialenosti(), idGaraze);
+            VypisSoferi.vypisTurnusy(turnusy, data.getCasVzdialenosti(), idGaraze);
             try {
                 ImportExportDat.vypisSmenyDoPdf(smeny);
             } catch (FileNotFoundException | DocumentException ex) {
