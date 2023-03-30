@@ -4,6 +4,7 @@ import dto.Spoj;
 import dto.Spoj.KlucSpoja;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -126,6 +127,21 @@ public class VypisSoferi {
         return smeny;
     }
 
+    public static List<SpojeLinky> vytvorSpojeLiniek(List<String> obsluzeneSpoje, Map<KlucSpoja, Spoj> spoje) {
+        Map<Integer, SpojeLinky> spojeLinky = new HashMap<>();
+        List<KlucSpoja> obsluzene = new ArrayList<>();
+        for (String spoj : obsluzeneSpoje) {
+            String[] data = spoj.split("_");
+            String[] sSpoj = data[1].split(";");
+            obsluzene.add(new KlucSpoja(Integer.valueOf(sSpoj[0]), Integer.valueOf(sSpoj[1])));
+        }
+        for (Map.Entry<KlucSpoja, Spoj> spoj : spoje.entrySet()) {
+            SpojeLinky linka = spojeLinky.computeIfAbsent(spoj.getKey().getLinka(), k -> new SpojeLinky(spoj.getKey().getLinka()));
+            linka.pridajSpoj(spoj.getValue(), obsluzene.contains(spoj.getKey()));
+        }
+        return new ArrayList<>(spojeLinky.values());
+    }
+
     public static void vypisTurnusy(List<List<SpojSofer>> turnusy, Map<Integer, Map<Integer, Integer>> vzdialenosti, int idGaraze) {
         System.out.println("Turnusy:");
         for (int i = 0; i < turnusy.size(); i++) {
@@ -137,7 +153,7 @@ public class VypisSoferi {
                         + " -> nový šofér -> jazda z garáže " + vzdialenosti.get(idGaraze).get(spoj.spoj.getMiestoOdchodu().getId()) + " -> "
                         : "")
                         + spoj.spoj.getKluc().toString()
-                        + "(" + spoj.spoj.getCasOdchodu() + ";" + spoj.spoj.getCasPrichodu() + " -> ";
+                        + "(" + spoj.spoj.getCasOdchodu() + ";" + spoj.spoj.getCasPrichodu() + ") -> ";
             }
             turnus += "jazda do garáže " + vzdialenosti.get(turnusy.get(i).get(turnusy.get(i).size() - 1).getSpoj().getMiestoPrichodu().getId()).get(idGaraze);
             System.out.println(turnus);

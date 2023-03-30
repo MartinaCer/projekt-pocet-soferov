@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import konfiguracia.Konstanty;
-import static konfiguracia.Konstanty.BEZ_PRESTAVKY;
-import static konfiguracia.Konstanty.MIN_PRESTAVKA;
-import static konfiguracia.Konstanty.MIN_SUCET_PRESTAVOK;
+import konfiguracia.Konstanty.Prestavka;
 
 /**
  *
@@ -57,10 +55,10 @@ public class SmenaSofera {
         return trvanie;
     }
 
-    public List<SpojSofera> porusujePrestavku() {
+    public List<SpojSofera> porusujePrestavku(Prestavka nastavenie) {
         List<SpojSofera> zoznam = new ArrayList<>();
         for (int i = 0; i < spoje.size() - 1; i++) {
-            int prestavka = spoje.get(i).getPrestavkaPoSpoji() >= MIN_PRESTAVKA
+            int prestavka = spoje.get(i).getPrestavkaPoSpoji() >= nastavenie.getMinPrestavka()
                     ? spoje.get(i).getPrestavkaPoSpoji()
                     : 0;
             int zaciatok = spoje.get(i).getSpoj().getCasOdchodu().toSecondOfDay();
@@ -75,8 +73,8 @@ public class SmenaSofera {
                 int prichod = j == spoje.size() - 1
                         ? spoj.getSpoj().getCasPrichodu().toSecondOfDay() + cestaDoGaraze
                         : spoj.getSpoj().getCasPrichodu().toSecondOfDay();
-                if (prichod - zaciatok > BEZ_PRESTAVKY) {
-                    if (prestavka < MIN_SUCET_PRESTAVOK) {
+                if (prichod - zaciatok > nastavenie.getBezPrestavky()) {
+                    if (prestavka < nastavenie.getMinSucetPrestavok()) {
                         return zoznam;
                     }
                     break;

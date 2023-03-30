@@ -1,6 +1,7 @@
 package gurobiModelFunkcie;
 
 import dto.Spoj;
+import dto.Spoj.KlucSpoja;
 import gurobi.GRB;
 import gurobi.GRBException;
 import gurobi.GRBLinExpr;
@@ -20,10 +21,10 @@ public class VseobecneFunkcie {
     private VseobecneFunkcie() {
     }
 
-    public static char[] vytvorPoleRovny(int pocet) {
+    public static char[] vytvorPoleRovnost(int pocet, char znamienko) {
         char[] pole = new char[pocet];
         for (int i = 0; i < pocet; i++) {
-            pole[i] = GRB.EQUAL;
+            pole[i] = znamienko;
         }
         return pole;
     }
@@ -36,14 +37,6 @@ public class VseobecneFunkcie {
         double[] pole = new double[pocet];
         for (int i = 0; i < pocet; i++) {
             pole[i] = hodnota;
-        }
-        return pole;
-    }
-
-    public static char[] vytvorPoleMensiRovny(int pocet) {
-        char[] pole = new char[pocet];
-        for (int i = 0; i < pocet; i++) {
-            pole[i] = GRB.LESS_EQUAL;
         }
         return pole;
     }
@@ -100,13 +93,13 @@ public class VseobecneFunkcie {
         return premenne;
     }
 
-    public static GRBVar[] vytvorSucetXij(Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenne) {
+    public static GRBVar[] vytvorSucetNasledovnych(Map<KlucSpoja, Map<KlucSpoja, GRBVar>> premenne) {
         List<GRBVar> retPremenne = new ArrayList<>();
         premenne.entrySet().forEach(e -> e.getValue().entrySet().forEach(e1 -> retPremenne.add(e1.getValue())));
         return vytvorPolePremennych(retPremenne);
     }
 
-    public static GRBLinExpr[] vytvorPodmienkySucetXijPodlaI(Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenne, List<Spoj> spoje) {
+    public static GRBLinExpr[] vytvorPodmienkySucetXijPodlaI(Map<KlucSpoja, Map<KlucSpoja, GRBVar>> premenne, List<Spoj> spoje) {
         List<GRBLinExpr> podmienky = new ArrayList<>();
         for (Spoj iSpoj : spoje) {
             if (!iSpoj.getMozneNasledovneSpojenia().isEmpty()) {
@@ -118,7 +111,7 @@ public class VseobecneFunkcie {
         return vytvorPolePodmienok(podmienky);
     }
 
-    public static GRBLinExpr[] vytvorPodmienkySucetXijPodlaJ(Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenne, List<Spoj> spoje) {
+    public static GRBLinExpr[] vytvorPodmienkySucetXijPodlaJ(Map<KlucSpoja, Map<KlucSpoja, GRBVar>> premenne, List<Spoj> spoje) {
         List<GRBLinExpr> podmienky = new ArrayList<>();
         for (Spoj jSpoj : spoje) {
             if (!jSpoj.getMoznePredosleSpojenia().isEmpty()) {

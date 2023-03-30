@@ -14,8 +14,6 @@ import gurobiModelFunkcie.VseobecneFunkcie;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -23,42 +21,58 @@ import java.util.logging.Logger;
  */
 public class MinPocetAutobusov {
 
-    public void optimalizuj(Data data) {
-        try {
-            GRBEnv env = new GRBEnv("minPocetAutobusov.log");
-            GRBModel model = new GRBModel(env);
-            
-            List<Spoj> zoznamSpojov = new ArrayList<>(data.getSpoje().values());
+    public VysledokMinAutobusy optimalizuj(Data data) throws GRBException {
+        GRBEnv env = new GRBEnv("minPocetAutobusov.log");
+        GRBModel model = new GRBModel(env);
 
-            Map<KlucSpoja, Map<KlucSpoja, GRBVar>> premenne = VseobecneFunkcie.vytvorPremenneXij(model, zoznamSpojov);
+        List<Spoj> zoznamSpojov = new ArrayList<>(data.getSpoje().values());
 
-            GRBVar[] premenneXij = VseobecneFunkcie.vytvorSucetXij(premenne);
-            GRBLinExpr ucelovaFunkcia = new GRBLinExpr();
-            ucelovaFunkcia.addTerms(VseobecneFunkcie.vytvorPoleJednotiek(premenneXij.length), premenneXij);
-            model.setObjective(ucelovaFunkcia, GRB.MAXIMIZE);
+        Map<KlucSpoja, Map<KlucSpoja, GRBVar>> premenne = VseobecneFunkcie.vytvorPremenneXij(model, zoznamSpojov);
 
-            GRBLinExpr[] podmienky1 = VseobecneFunkcie.vytvorPodmienkySucetXijPodlaI(premenne, zoznamSpojov);
-            model.addConstrs(podmienky1, VseobecneFunkcie.vytvorPoleMensiRovny(podmienky1.length),
-                    VseobecneFunkcie.vytvorPoleJednotiek(podmienky1.length), VseobecneFunkcie.vytvorNazvyPodmienok(podmienky1.length, "1"));
+        GRBVar[] premenneXij = VseobecneFunkcie.vytvorSucetNasledovnych(premenne);
+        GRBLinExpr ucelovaFunkcia = new GRBLinExpr();
+        ucelovaFunkcia.addTerms(VseobecneFunkcie.vytvorPoleJednotiek(premenneXij.length), premenneXij);
+        model.setObjective(ucelovaFunkcia, GRB.MAXIMIZE);
 
-            GRBLinExpr[] podmienky2 = VseobecneFunkcie.vytvorPodmienkySucetXijPodlaJ(premenne, zoznamSpojov);
-            model.addConstrs(podmienky2, VseobecneFunkcie.vytvorPoleMensiRovny(podmienky2.length),
-                    VseobecneFunkcie.vytvorPoleJednotiek(podmienky2.length), VseobecneFunkcie.vytvorNazvyPodmienok(podmienky2.length, "2"));
+        GRBLinExpr[] podmienky1 = VseobecneFunkcie.vytvorPodmienkySucetXijPodlaI(premenne, zoznamSpojov);
+        model.addConstrs(podmienky1, VseobecneFunkcie.vytvorPoleRovnost(podmienky1.length, GRB.LESS_EQUAL),
+                VseobecneFunkcie.vytvorPoleJednotiek(podmienky1.length), VseobecneFunkcie.vytvorNazvyPodmienok(podmienky1.length, "1"));
 
-            model.optimize();
+        GRBLinExpr[] podmienky2 = VseobecneFunkcie.vytvorPodmienkySucetXijPodlaJ(premenne, zoznamSpojov);
+        model.addConstrs(podmienky2, VseobecneFunkcie.vytvorPoleRovnost(podmienky2.length, GRB.LESS_EQUAL),
+                VseobecneFunkcie.vytvorPoleJednotiek(podmienky2.length), VseobecneFunkcie.vytvorNazvyPodmienok(podmienky2.length, "2"));
 
-            System.out.println("Minimálny počet autobusov: " + (data.getSpoje().size() - model.get(GRB.DoubleAttr.ObjVal)));
-            List<String> spoje = new ArrayList<>();
-            for (GRBVar var : model.getVars()) {
-                if (var.get(GRB.DoubleAttr.X) == 1) {
-                    spoje.add(var.get(GRB.StringAttr.VarName));
-                }
+        model.optimize();
+
+        List<String> spoje = new ArrayList<>();
+        for (GRBVar var : model.getVars()) {
+            if (var.get(GRB.DoubleAttr.X) == 1) {
+                spoje.add(var.get(GRB.StringAttr.VarName));
             }
-            Vypis.vypisTurnusy(Vypis.vytvorTurnusy(spoje, data.getSpoje()));
-            model.dispose();
-            env.dispose();
-        } catch (GRBException ex) {
-            Logger.getLogger(MinPocetAutobusov.class.getName()).log(Level.SEVERE, null, ex);
         }
+        VysledokMinAutobusy vysledok = new VysledokMinAutobusy((int) (data.getSpoje().size() - model.get(GRB.DoubleAttr.ObjVal)), Vypis.vytvorTurnusy(spoje, data.getSpoje()));
+        model.dispose();
+        env.dispose();
+        return vysledok;
+    }
+
+    public static class VysledokMinAutobusy {
+
+        private final int pocetAutobusov;
+        private final List<List<Spoj>> turnusy;
+
+        public VysledokMinAutobusy(int pocetAutobusov, List<List<Spoj>> turnusy) {
+            this.pocetAutobusov = pocetAutobusov;
+            this.turnusy = turnusy;
+        }
+
+        public int getPocetAutobusov() {
+            return pocetAutobusov;
+        }
+
+        public List<List<Spoj>> getTurnusy() {
+            return turnusy;
+        }
+
     }
 }

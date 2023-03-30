@@ -1,6 +1,7 @@
 package gurobiModelFunkcie;
 
 import dto.Spoj;
+import dto.Spoj.KlucSpoja;
 import gurobi.GRB;
 import gurobi.GRBException;
 import gurobi.GRBLinExpr;
@@ -17,7 +18,7 @@ import java.util.Map;
  */
 public class GarazFunkcie {
 
-    public static GRBLinExpr[] vytvorPodmienkySucetXijPodlaIaUj(Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenneXij, Map<Spoj.KlucSpoja, GRBVar> premenneUj, List<Spoj> spoje) {
+    public static GRBLinExpr[] vytvorPodmienkySucetXijPodlaIaUj(Map<KlucSpoja, Map<KlucSpoja, GRBVar>> premenneXij, Map<KlucSpoja, GRBVar> premenneUj, List<Spoj> spoje) {
         List<GRBLinExpr> podmienky = new ArrayList<>();
         for (Spoj iSpoj : spoje) {
             GRBLinExpr podmienka = new GRBLinExpr();
@@ -28,7 +29,7 @@ public class GarazFunkcie {
         return VseobecneFunkcie.vytvorPolePodmienok(podmienky);
     }
 
-    public static GRBLinExpr[] vytvorPodmienkySucetXijPodlaJaVi(Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenneXij, Map<Spoj.KlucSpoja, GRBVar> premenneVi, List<Spoj> spoje) {
+    public static GRBLinExpr[] vytvorPodmienkySucetXijPodlaJaVi(Map<KlucSpoja, Map<KlucSpoja, GRBVar>> premenneXij, Map<KlucSpoja, GRBVar> premenneVi, List<Spoj> spoje) {
         List<GRBLinExpr> podmienky = new ArrayList<>();
         for (Spoj jSpoj : spoje) {
             GRBLinExpr podmienka = new GRBLinExpr();
@@ -39,12 +40,18 @@ public class GarazFunkcie {
         return VseobecneFunkcie.vytvorPolePodmienok(podmienky);
     }
 
-    public static Map<Spoj.KlucSpoja, GRBVar> vytvorPremenneUjVi(GRBModel model, List<Spoj> spoje, String meno) throws GRBException {
+    public static Map<Spoj.KlucSpoja, GRBVar> vytvorPremenneVsetkySpoje(GRBModel model, List<Spoj> spoje, String meno) throws GRBException {
         Map<Spoj.KlucSpoja, GRBVar> premenne = new HashMap<>();
         for (Spoj spoj : spoje) {
             premenne.put(spoj.getKluc(), model.addVar(0, 1, 0, GRB.BINARY, meno + "_" + spoj.getKluc().toString()));
         }
         return premenne;
+    }
+
+    public static GRBVar[] vytvorSucetVsetkySpoje(Map<Spoj.KlucSpoja, GRBVar> premenne) {
+        List<GRBVar> retPremenne = new ArrayList<>();
+        premenne.entrySet().forEach(e -> retPremenne.add(e.getValue()));
+        return VseobecneFunkcie.vytvorPolePremennych(retPremenne);
     }
 
     public static double[] vytvorPoleVzdialenostiPreGaraz(GRBVar[] premenneUjVi, Map<Spoj.KlucSpoja, Spoj> spoje,
@@ -60,12 +67,6 @@ public class GarazFunkcie {
                     : vzdialenosti.get(idGaraze).get(spoj.getMiestoOdchodu().getId()) * cena;
         }
         return pole;
-    }
-
-    public static GRBVar[] vytvorSucetUjVj(Map<Spoj.KlucSpoja, GRBVar> premenne) {
-        List<GRBVar> retPremenne = new ArrayList<>();
-        premenne.entrySet().forEach(e -> retPremenne.add(e.getValue()));
-        return VseobecneFunkcie.vytvorPolePremennych(retPremenne);
     }
 
 }

@@ -16,6 +16,7 @@ public class Spoj {
     private final LocalTime casOdchodu;
     private final LocalTime casPrichodu;
     private final int kilometre;
+    private int priorita;
 
     private final List<Spoj> moznePredosleSpojenia;
     private final List<Spoj> mozneNasledovneSpojenia;
@@ -59,6 +60,14 @@ public class Spoj {
 
     public int getKilometre() {
         return kilometre;
+    }
+
+    public int getPriorita() {
+        return priorita;
+    }
+
+    public void setPriorita(int priorita) {
+        this.priorita = priorita;
     }
 
     public List<Spoj> getMoznePredosleSpojenia() {

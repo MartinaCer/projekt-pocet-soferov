@@ -6,12 +6,12 @@ import gurobi.GRBException;
 import gurobi.GRBLinExpr;
 import gurobi.GRBModel;
 import gurobi.GRBVar;
-import static gurobiModelFunkcie.VseobecneFunkcie.vytvorPolePremennych;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import konfiguracia.Konstanty;
+import static konfiguracia.Konstanty.PRESTAVKA_V_DOBE_JAZDY;
 
 /**
  *
@@ -22,14 +22,6 @@ public class SoferiFunkcie {
     private static final int K = (int) (Konstanty.MAX_DOBA_JAZDY > Konstanty.MAX_DOBA_SMENY ? Konstanty.MAX_DOBA_JAZDY : Konstanty.MAX_DOBA_SMENY * 1.2);
 
     private SoferiFunkcie() {
-    }
-
-    public static double[] vytvorPoleCenySoferov(int pocet) {
-        double[] pole = new double[pocet];
-        for (int i = 0; i < pocet; i++) {
-            pole[i] = -Konstanty.CENA_SOFERA;
-        }
-        return pole;
     }
 
     public static double[] vytvorPoleVzdialenostiZaDoGaraze(GRBVar[] premenneYij, Map<Spoj.KlucSpoja, Spoj> spoje,
@@ -67,12 +59,6 @@ public class SoferiFunkcie {
             premenne.put(spoj.getKluc(), model.addVar(0, meno.equals("s") ? Konstanty.MAX_DOBA_SMENY : Konstanty.MAX_DOBA_JAZDY, 0, GRB.CONTINUOUS, meno + "_" + spoj.getKluc().toString()));
         }
         return premenne;
-    }
-
-    public static GRBVar[] vytvorSucetYij(Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenne) {
-        List<GRBVar> retPremenne = new ArrayList<>();
-        premenne.entrySet().forEach(e -> e.getValue().entrySet().forEach(e1 -> retPremenne.add(e1.getValue())));
-        return vytvorPolePremennych(retPremenne);
     }
 
     public static GRBLinExpr[] vytvorPodmienkySucetXijYijPodlaJaVi(Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenneXij,
@@ -126,7 +112,9 @@ public class SoferiFunkcie {
                 if (sJ) {
                     podmienka.addTerm(jSpoj.getCasOdchodu().toSecondOfDay() - iSpoj.getCasPrichodu().toSecondOfDay(), xIJ);
                 } else {
-                    podmienka.addTerm(vzdialenosti.get(iSpoj.getMiestoPrichodu().getId()).get(jSpoj.getMiestoOdchodu().getId()) + Konstanty.REZERVA, xIJ);
+                    int vzdialenost = vzdialenosti.get(iSpoj.getMiestoPrichodu().getId()).get(jSpoj.getMiestoOdchodu().getId());
+                    int prestavka = jSpoj.getCasOdchodu().toSecondOfDay() - iSpoj.getCasOdchodu().toSecondOfDay() - vzdialenost;
+                    podmienka.addTerm(prestavka <= PRESTAVKA_V_DOBE_JAZDY ? vzdialenost + prestavka : vzdialenost, xIJ);
                 }
                 podmienka.addTerm(K, xIJ);
                 podmienka.addConstant(casSpojaJ - K);
@@ -200,4 +188,5 @@ public class SoferiFunkcie {
             poradiePodmienky++;
         }
     }
+
 }

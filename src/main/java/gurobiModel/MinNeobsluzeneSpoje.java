@@ -10,9 +10,11 @@ import gurobi.GRBModel;
 import gurobi.GRBVar;
 import gurobiModelFunkcie.GarazFunkcie;
 import gurobiModelFunkcie.SoferiFunkcie;
+import gurobiModelFunkcie.SpojeFunkcie;
 import gurobiModelFunkcie.VseobecneFunkcie;
 import gurobiModelVypisy.SmenaSofera;
 import gurobiModelVypisy.SpojSofera;
+import gurobiModelVypisy.SpojeLinky;
 import gurobiModelVypisy.VypisSoferi;
 import gurobiModelVypisy.VypisSoferi.SpojSofer;
 import java.util.ArrayList;
@@ -26,10 +28,10 @@ import konfiguracia.Konstanty.Prestavka;
  *
  * @author Martina Cernekova
  */
-public class MinPocetSoferov {
+public class MinNeobsluzeneSpoje {
 
-    public VysledokMinSoferi optimalizuj(Data data, int pocetAutobusov) throws GRBException {
-        GRBEnv env = new GRBEnv("minPocetSoferov.log");
+    public VysledokMinSpoje optimalizuj(Data data, int pocetAutobusov, int pocetSoferov) throws GRBException {
+        GRBEnv env = new GRBEnv("minNeobsluzeneSpoje.log");
         GRBModel model = new GRBModel(env);
 
         List<Spoj> zoznamSpojov = new ArrayList<>(data.getSpoje().values());
@@ -37,6 +39,7 @@ public class MinPocetSoferov {
 
         Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> xIJ = VseobecneFunkcie.vytvorPremenneXij(model, zoznamSpojov);
         Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> yIJ = SoferiFunkcie.vytvorPremenneYij(model, zoznamSpojov);
+        Map<Spoj.KlucSpoja, GRBVar> pi = GarazFunkcie.vytvorPremenneVsetkySpoje(model, zoznamSpojov, "p");
         Map<Spoj.KlucSpoja, GRBVar> uJ = GarazFunkcie.vytvorPremenneVsetkySpoje(model, zoznamSpojov, "u");
         Map<Spoj.KlucSpoja, GRBVar> vI = GarazFunkcie.vytvorPremenneVsetkySpoje(model, zoznamSpojov, "v");
         Map<Spoj.KlucSpoja, GRBVar> sJ = SoferiFunkcie.vytvorPremenneSjTj(model, zoznamSpojov, "s");
@@ -45,9 +48,12 @@ public class MinPocetSoferov {
 
         GRBVar[] premenneXij = VseobecneFunkcie.vytvorSucetNasledovnych(xIJ);
         GRBVar[] premenneYij = VseobecneFunkcie.vytvorSucetNasledovnych(yIJ);
+        GRBVar[] premennePi = GarazFunkcie.vytvorSucetVsetkySpoje(pi);
         GRBVar[] premenneUj = GarazFunkcie.vytvorSucetVsetkySpoje(uJ);
         GRBVar[] premenneVi = GarazFunkcie.vytvorSucetVsetkySpoje(vI);
+
         GRBLinExpr ucelovaFunkcia = new GRBLinExpr();
+        ucelovaFunkcia.addTerms(SpojeFunkcie.vytvorPolePriorit(premennePi, data.getSpoje()), premennePi);
         ucelovaFunkcia.addConstant(data.getSpoje().size() * data.getKonfiguracia().getCenaSofera());
         ucelovaFunkcia.addTerms(VseobecneFunkcie.vytvorPoleHodnot(premenneXij.length, -data.getKonfiguracia().getCenaSofera()), premenneXij);
         ucelovaFunkcia.addTerms(VseobecneFunkcie.vytvorPoleVzdialenosti(premenneXij, data.getSpoje(), data.getKmVzdialenosti(), data.getKonfiguracia().getCenaKilometer()), premenneXij);
@@ -56,13 +62,8 @@ public class MinPocetSoferov {
         ucelovaFunkcia.addTerms(GarazFunkcie.vytvorPoleVzdialenostiPreGaraz(premenneVi, data.getSpoje(), data.getKmVzdialenosti(), idGaraze, false, data.getKonfiguracia().getCenaKilometer()), premenneVi);
         model.setObjective(ucelovaFunkcia, GRB.MINIMIZE);
 
-        GRBLinExpr[] podmienky1 = SoferiFunkcie.vytvorPodmienkySucetXijYijPodlaIaUj(xIJ, yIJ, uJ, zoznamSpojov);
-        model.addConstrs(podmienky1, VseobecneFunkcie.vytvorPoleRovnost(podmienky1.length, GRB.EQUAL),
-                VseobecneFunkcie.vytvorPoleJednotiek(podmienky1.length), VseobecneFunkcie.vytvorNazvyPodmienok(podmienky1.length, "1"));
-
-        GRBLinExpr[] podmienky2 = SoferiFunkcie.vytvorPodmienkySucetXijYijPodlaJaVi(xIJ, yIJ, vI, zoznamSpojov);
-        model.addConstrs(podmienky2, VseobecneFunkcie.vytvorPoleRovnost(podmienky2.length, GRB.EQUAL),
-                VseobecneFunkcie.vytvorPoleJednotiek(podmienky2.length), VseobecneFunkcie.vytvorNazvyPodmienok(podmienky2.length, "2"));
+        SpojeFunkcie.pridajPodmienkySucetXijYijPodlaIaUj(model, xIJ, yIJ, uJ, pi, zoznamSpojov, "1");
+        SpojeFunkcie.pridajPodmienkySucetXijYijPodlaJaVi(model, xIJ, yIJ, vI, pi, zoznamSpojov, "2");
 
         GRBLinExpr[] podmienky3 = SoferiFunkcie.vytvorPodmienkySjTjGaraz(sJ, data.getCasVzdialenosti(), idGaraze, zoznamSpojov);
         model.addConstrs(podmienky3, VseobecneFunkcie.vytvorPoleRovnost(podmienky3.length, GRB.LESS_EQUAL),
@@ -84,14 +85,23 @@ public class MinPocetSoferov {
         GRBLinExpr podmienkaPocetAutobusov = new GRBLinExpr();
         podmienkaPocetAutobusov.addTerms(VseobecneFunkcie.vytvorPoleJednotiek(premenneXij.length), premenneXij);
         podmienkaPocetAutobusov.addTerms(VseobecneFunkcie.vytvorPoleJednotiek(premenneYij.length), premenneYij);
-        model.addConstr(podmienkaPocetAutobusov, GRB.EQUAL, data.getSpoje().size() - pocetAutobusov, "13");
+        model.addConstr(podmienkaPocetAutobusov, GRB.LESS_EQUAL, data.getSpoje().size() - pocetAutobusov, "13");
+
+        GRBLinExpr podmienkaPocetU = new GRBLinExpr();
+        podmienkaPocetU.addTerms(VseobecneFunkcie.vytvorPoleJednotiek(premenneUj.length), premenneUj);
+        model.addConstr(podmienkaPocetU, GRB.LESS_EQUAL, pocetAutobusov, "14");
+
+        GRBLinExpr podmienkaPocetSoferov = new GRBLinExpr();
+        podmienkaPocetSoferov.addTerms(VseobecneFunkcie.vytvorPoleJednotiek(premenneUj.length), premenneUj);
+        podmienkaPocetSoferov.addTerms(VseobecneFunkcie.vytvorPoleJednotiek(premenneYij.length), premenneYij);
+        model.addConstr(podmienkaPocetSoferov, GRB.LESS_EQUAL, pocetSoferov, "15");
 
         model.set(GRB.DoubleParam.Heuristics, 0.001);
         model.set(GRB.DoubleParam.TimeLimit, 100);
         model.optimize();
-
         List<String> spoje = new ArrayList<>();
-        List<List<SpojSofer>> turnusy = null;
+        List<String> obsluzeneSpoje = new ArrayList<>();
+        List<List<VypisSoferi.SpojSofer>> turnusy = null;
         List<List<SmenaSofera>> smeny = null;
         boolean porusujePrestavky = true;
         while (porusujePrestavky) {
@@ -101,6 +111,9 @@ public class MinPocetSoferov {
             for (GRBVar var : model.getVars()) {
                 if (var.get(GRB.DoubleAttr.X) == 1) {
                     String v = var.get(GRB.StringAttr.VarName);
+                    if (v.charAt(0) == 'p') {
+                        obsluzeneSpoje.add(v);
+                    }
                     if (v.charAt(0) == 'x') {
                         spoje.add(v);
                     }
@@ -133,40 +146,53 @@ public class MinPocetSoferov {
                     for (int i = 0; i < smena.size() - 1; i++) {
                         podmienka.addTerm(1, xIJ.get(smena.get(i).getSpoj().getKluc()).get(smena.get(i + 1).getSpoj().getKluc()));
                     }
-                    model.addConstr(podmienka, GRB.LESS_EQUAL, smena.size() - 2, "14_" + poradiePodmienky);
+                    model.addConstr(podmienka, GRB.LESS_EQUAL, smena.size() - 2, "16_" + poradiePodmienky);
                     poradiePodmienky++;
                 }
                 model.optimize();
             }
         }
-        VysledokMinSoferi vysledok = new VysledokMinSoferi((int) model.get(GRB.DoubleAttr.ObjVal), smeny.stream().mapToInt(s -> s.size()).sum(), turnusy);
+        int p = 0;
+        for (List<SmenaSofera> list : smeny) {
+            for (SmenaSofera smenaSofera : list) {
+                p += smenaSofera.getSpoje().size();
+            }
+        }
+        VysledokMinSpoje vysledok = new VysledokMinSpoje(smeny.stream().mapToInt(s -> s.size()).sum(), p, turnusy,
+                VypisSoferi.vytvorSpojeLiniek(obsluzeneSpoje, data.getSpoje()));
         model.dispose();
         env.dispose();
         return vysledok;
     }
 
-    public static class VysledokMinSoferi {
+    public static class VysledokMinSpoje {
 
-        private final int cena;
         private final int pocetSoferov;
+        private final int pocetObsluzenych;
         private final List<List<SpojSofer>> smeny;
+        private final List<SpojeLinky> linky;
 
-        public VysledokMinSoferi(int cena, int pocetSoferov, List<List<SpojSofer>> smeny) {
-            this.cena = cena;
+        public VysledokMinSpoje(int pocetSoferov, int pocetObsluzenych, List<List<SpojSofer>> smeny, List<SpojeLinky> linky) {
             this.pocetSoferov = pocetSoferov;
+            this.pocetObsluzenych = pocetObsluzenych;
             this.smeny = smeny;
-        }
-
-        public int getCena() {
-            return cena;
+            this.linky = linky;
         }
 
         public int getPocetSoferov() {
             return pocetSoferov;
         }
 
+        public int getPocetObsluzenych() {
+            return pocetObsluzenych;
+        }
+
         public List<List<SpojSofer>> getSmeny() {
             return smeny;
+        }
+
+        public List<SpojeLinky> getLinky() {
+            return linky;
         }
 
     }
