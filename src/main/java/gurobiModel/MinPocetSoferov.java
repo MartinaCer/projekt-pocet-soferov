@@ -139,7 +139,8 @@ public class MinPocetSoferov {
                 model.optimize();
             }
         }
-        VysledokMinSoferi vysledok = new VysledokMinSoferi((int) model.get(GRB.DoubleAttr.ObjVal), smeny.stream().mapToInt(s -> s.size()).sum(), turnusy);
+        VysledokMinSoferi vysledok = new VysledokMinSoferi((int) model.get(GRB.DoubleAttr.ObjVal), 
+                smeny.stream().mapToInt(s -> s.size()).sum(), VypisSoferi.vytvorSmeny(turnusy, data.getCasVzdialenosti(), idGaraze));
         model.dispose();
         env.dispose();
         return vysledok;
@@ -149,9 +150,9 @@ public class MinPocetSoferov {
 
         private final int cena;
         private final int pocetSoferov;
-        private final List<List<SpojSofer>> smeny;
+        private final List<List<SmenaSofera>> smeny;
 
-        public VysledokMinSoferi(int cena, int pocetSoferov, List<List<SpojSofer>> smeny) {
+        public VysledokMinSoferi(int cena, int pocetSoferov, List<List<SmenaSofera>> smeny) {
             this.cena = cena;
             this.pocetSoferov = pocetSoferov;
             this.smeny = smeny;
@@ -165,7 +166,7 @@ public class MinPocetSoferov {
             return pocetSoferov;
         }
 
-        public List<List<SpojSofer>> getSmeny() {
+        public List<List<SmenaSofera>> getSmeny() {
             return smeny;
         }
 

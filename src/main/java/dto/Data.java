@@ -14,22 +14,43 @@ import konfiguracia.Konfiguracia;
  */
 public class Data {
 
-    private final Map<Integer, Zastavka> zastavky;
-    private final List<Usek> useky;
-    private final Map<KlucSpoja, Spoj> spoje;
-    private final Map<Integer, Map<Integer, Integer>> casVzdialenosti;
-    private final Map<Integer, Map<Integer, Integer>> kmVzdialenosti;
     private final Konfiguracia konfiguracia;
 
-    public Data(Map<Integer, Zastavka> zastavky, List<Usek> useky, Map<KlucSpoja, Spoj> spoje, Konfiguracia konfiguracia) {
+    private Map<Integer, Zastavka> zastavky;
+    private List<Usek> useky;
+    private Map<KlucSpoja, Spoj> spoje;
+    private Map<Integer, Map<Integer, Integer>> casVzdialenosti;
+    private Map<Integer, Map<Integer, Integer>> kmVzdialenosti;
+    private boolean nastaveneData = false;
+
+    public Data(Konfiguracia konfiguracia) {
+        this.konfiguracia = konfiguracia;
+    }
+
+    public void vytvorData(Map<Integer, Zastavka> zastavky, List<Usek> useky, Map<KlucSpoja, Spoj> spoje) {
         this.zastavky = zastavky;
         this.useky = useky;
         this.spoje = spoje;
         this.casVzdialenosti = Vzdialenosti.vypocitaj(new ArrayList<>(zastavky.values()), useky, true);
         this.kmVzdialenosti = Vzdialenosti.vypocitaj(new ArrayList<>(zastavky.values()), useky, false);
-        this.konfiguracia = konfiguracia;
         MoznePrepojeniaSpojov.vypocitajNasledovne(new ArrayList<>(spoje.values()), casVzdialenosti, konfiguracia.getRezerva());
         MoznePrepojeniaSpojov.vypocitajZmenaSoferov(new ArrayList<>(spoje.values()), casVzdialenosti, konfiguracia.getGaraz());
+        nastaveneData = true;
+    }
+
+    public void zmenKonfiguraciu() {
+        if (nastaveneData) {
+            MoznePrepojeniaSpojov.vypocitajNasledovne(new ArrayList<>(spoje.values()), casVzdialenosti, konfiguracia.getRezerva());
+            MoznePrepojeniaSpojov.vypocitajZmenaSoferov(new ArrayList<>(spoje.values()), casVzdialenosti, konfiguracia.getGaraz());
+        }
+    }
+
+    public Konfiguracia getKonfiguracia() {
+        return konfiguracia;
+    }
+
+    public boolean isNastaveneData() {
+        return nastaveneData;
     }
 
     public Map<Integer, Zastavka> getZastavky() {
@@ -42,10 +63,6 @@ public class Data {
 
     public Map<KlucSpoja, Spoj> getSpoje() {
         return spoje;
-    }
-
-    public Konfiguracia getKonfiguracia() {
-        return konfiguracia;
     }
 
     public Map<Integer, Map<Integer, Integer>> getCasVzdialenosti() {

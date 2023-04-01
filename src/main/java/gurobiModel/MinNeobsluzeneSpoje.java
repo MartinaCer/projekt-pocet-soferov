@@ -158,7 +158,8 @@ public class MinNeobsluzeneSpoje {
                 p += smenaSofera.getSpoje().size();
             }
         }
-        VysledokMinSpoje vysledok = new VysledokMinSpoje(smeny.stream().mapToInt(s -> s.size()).sum(), p, turnusy,
+        VysledokMinSpoje vysledok = new VysledokMinSpoje(smeny.stream().mapToInt(s -> s.size()).sum(), p, 
+                VypisSoferi.vytvorSmeny(turnusy, data.getCasVzdialenosti(), idGaraze),
                 VypisSoferi.vytvorSpojeLiniek(obsluzeneSpoje, data.getSpoje()));
         model.dispose();
         env.dispose();
@@ -169,10 +170,10 @@ public class MinNeobsluzeneSpoje {
 
         private final int pocetSoferov;
         private final int pocetObsluzenych;
-        private final List<List<SpojSofer>> smeny;
+        private final List<List<SmenaSofera>> smeny;
         private final List<SpojeLinky> linky;
 
-        public VysledokMinSpoje(int pocetSoferov, int pocetObsluzenych, List<List<SpojSofer>> smeny, List<SpojeLinky> linky) {
+        public VysledokMinSpoje(int pocetSoferov, int pocetObsluzenych, List<List<SmenaSofera>> smeny, List<SpojeLinky> linky) {
             this.pocetSoferov = pocetSoferov;
             this.pocetObsluzenych = pocetObsluzenych;
             this.smeny = smeny;
@@ -187,7 +188,7 @@ public class MinNeobsluzeneSpoje {
             return pocetObsluzenych;
         }
 
-        public List<List<SpojSofer>> getSmeny() {
+        public List<List<SmenaSofera>> getSmeny() {
             return smeny;
         }
 

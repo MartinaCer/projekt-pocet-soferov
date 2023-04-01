@@ -19,6 +19,7 @@ import gurobiModelVypisy.SpojeLinky;
 import gurobiModelVypisy.SpojeLinky.SpojLinky;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -40,20 +41,18 @@ import java.util.Map;
  */
 public final class ImportExportDat {
 
-    private static final String ZASTAVKY = "/zastavky.csv";
-    private static final String USEKY = "/useky.csv";
-//    private static final String SPOJE = "/spoje.csv";
-    private static final String SPOJE = "/spoje2.csv";
-    private static final String TURNUSY = "turnusy.pdf";
-    private static final String SMENY = "smeny.pdf";
-    private static final String LINKY = "linky.pdf";
+    private static final String ZASTAVKY_DEMO = "/zastavky.csv";
+    private static final String USEKY_DEMO = "/useky.csv";
+    private static final String SPOJE_DEMO = "/spoje.csv";
 
     private ImportExportDat() {
     }
 
-    public static Map<Integer, Zastavka> nacitajZastavky() throws IOException {
+    public static Map<Integer, Zastavka> nacitajZastavky(File subor) throws IOException {
         Map<Integer, Zastavka> zastavky = new HashMap<>();
-        InputStream is = ImportExportDat.class.getResourceAsStream(ZASTAVKY);
+        InputStream is = subor == null
+                ? ImportExportDat.class.getResourceAsStream(ZASTAVKY_DEMO)
+                : new FileInputStream(subor);
         BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
         String riadok;
         while ((riadok = br.readLine()) != null) {
@@ -67,9 +66,11 @@ public final class ImportExportDat {
         return zastavky;
     }
 
-    public static List<Usek> nacitajUseky(Map<Integer, Zastavka> zastavky) throws IOException {
+    public static List<Usek> nacitajUseky(File subor, Map<Integer, Zastavka> zastavky) throws IOException {
         List<Usek> useky = new ArrayList<>();
-        InputStream is = ImportExportDat.class.getResourceAsStream(USEKY);
+        InputStream is = subor == null
+                ? ImportExportDat.class.getResourceAsStream(USEKY_DEMO)
+                : new FileInputStream(subor);
         BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
         String riadok;
         while ((riadok = br.readLine()) != null) {
@@ -85,9 +86,11 @@ public final class ImportExportDat {
         return useky;
     }
 
-    public static Map<KlucSpoja, Spoj> nacitajSpoje(Map<Integer, Zastavka> zastavky) throws IOException {
+    public static Map<KlucSpoja, Spoj> nacitajSpoje(File subor, Map<Integer, Zastavka> zastavky) throws IOException {
         Map<KlucSpoja, Spoj> spoje = new HashMap<>();
-        InputStream is = ImportExportDat.class.getResourceAsStream(SPOJE);
+        InputStream is = subor == null
+                ? ImportExportDat.class.getResourceAsStream(SPOJE_DEMO)
+                : new FileInputStream(subor);
         BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
         String riadok;
         while ((riadok = br.readLine()) != null) {
@@ -107,11 +110,58 @@ public final class ImportExportDat {
         is.close();
         return spoje;
     }
+    
+    public static void vypisTurnusyDoPdf(List<List<Spoj>> turnusy, String nazov) throws FileNotFoundException, DocumentException {
+        Document document = new Document(PageSize.A4.rotate());
+        PdfWriter.getInstance(document, new FileOutputStream(new File(nazov + ".pdf")));
+        document.open();
+        document.addTitle("Turnusy");
+        int poradieTurnusu = 1;
+        for (List<Spoj> turnus : turnusy) {
+            document.add(new Paragraph("Turnus " + poradieTurnusu));
+            PdfPTable tabulka = new PdfPTable(6);
+            tabulka.setWidthPercentage(100);
+            tabulka.setSpacingBefore(5f);
+            tabulka.setSpacingAfter(5f);
+            PdfPCell hlavicka = new PdfPCell(new Phrase("Spoj"));
+            hlavicka.setHorizontalAlignment(Element.ALIGN_CENTER);
+            tabulka.addCell(hlavicka);
+            hlavicka = new PdfPCell(new Phrase("Linka"));
+            hlavicka.setHorizontalAlignment(Element.ALIGN_CENTER);
+            tabulka.addCell(hlavicka);
+            hlavicka = new PdfPCell(new Phrase("Miesto odchodu"));
+            hlavicka.setHorizontalAlignment(Element.ALIGN_CENTER);
+            tabulka.addCell(hlavicka);
+            hlavicka = new PdfPCell(new Phrase("Odchod"));
+            hlavicka.setHorizontalAlignment(Element.ALIGN_CENTER);
+            tabulka.addCell(hlavicka);
+            hlavicka = new PdfPCell(new Phrase("Miesto príchodu"));
+            hlavicka.setHorizontalAlignment(Element.ALIGN_CENTER);
+            tabulka.addCell(hlavicka);
+            hlavicka = new PdfPCell(new Phrase("Príchod"));
+            hlavicka.setHorizontalAlignment(Element.ALIGN_CENTER);
+            tabulka.addCell(hlavicka);
+            tabulka.setHeaderRows(1);
+            for (Spoj spoj : turnus) {
+                tabulka.addCell(String.valueOf(spoj.getKluc().getId()));
+                tabulka.addCell(String.valueOf(spoj.getKluc().getLinka()));
+                Zastavka odchod = spoj.getMiestoOdchodu();
+                tabulka.addCell(String.valueOf(odchod.getId()) + " - " + odchod.getNazov());
+                tabulka.addCell(spoj.getCasOdchodu().toString());
+                Zastavka prichod = spoj.getMiestoPrichodu();
+                tabulka.addCell(String.valueOf(prichod.getId()) + " - " + prichod.getNazov());
+                tabulka.addCell(spoj.getCasPrichodu().toString());
+            }
+            document.add(tabulka);
+            poradieTurnusu++;
+        }
+        document.close();
+    }
 
-    public static void vypisSmenyDoPdf(List<List<SmenaSofera>> turnusy) throws FileNotFoundException, DocumentException {
+    public static void vypisSmenyDoPdf(List<List<SmenaSofera>> turnusy, String nazov) throws FileNotFoundException, DocumentException {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
         Document document = new Document(PageSize.A4.rotate());
-        PdfWriter.getInstance(document, new FileOutputStream(new File(SMENY)));
+        PdfWriter.getInstance(document, new FileOutputStream(new File(nazov + ".pdf")));
         document.open();
         document.addTitle("Smeny");
         int poradieTurnusu = 1;
@@ -186,10 +236,10 @@ public final class ImportExportDat {
         document.close();
     }
 
-    public static void vypisLinkyDoPdf(List<SpojeLinky> linky) throws FileNotFoundException, DocumentException {
+    public static void vypisLinkyDoPdf(List<SpojeLinky> linky, String nazov) throws FileNotFoundException, DocumentException {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
         Document document = new Document(PageSize.A4.rotate());
-        PdfWriter.getInstance(document, new FileOutputStream(new File(LINKY)));
+        PdfWriter.getInstance(document, new FileOutputStream(new File(nazov + ".pdf")));
         document.open();
         document.addTitle("Linky");
         for (SpojeLinky spojeLinky : linky) {
