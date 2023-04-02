@@ -16,7 +16,6 @@ import gurobiModelVypisy.SmenaSofera;
 import gurobiModelVypisy.SpojSofera;
 import gurobiModelVypisy.SpojeLinky;
 import gurobiModelVypisy.VypisSoferi;
-import gurobiModelVypisy.VypisSoferi.SpojSofer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +29,7 @@ import konfiguracia.Konstanty.Prestavka;
  */
 public class MinNeobsluzeneSpoje {
 
-    public VysledokMinSpoje optimalizuj(Data data, int pocetAutobusov, int pocetSoferov) throws GRBException {
+    public VysledokMinSpoje optimalizuj(Data data, int pocetAutobusov, int pocetSoferov, int limit) throws GRBException {
         GRBEnv env = new GRBEnv("minNeobsluzeneSpoje.log");
         GRBModel model = new GRBModel(env);
 
@@ -97,7 +96,9 @@ public class MinNeobsluzeneSpoje {
         model.addConstr(podmienkaPocetSoferov, GRB.LESS_EQUAL, pocetSoferov, "15");
 
         model.set(GRB.DoubleParam.Heuristics, 0.001);
-        model.set(GRB.DoubleParam.TimeLimit, 100);
+        if (limit > 0) {
+            model.set(GRB.DoubleParam.TimeLimit, limit);
+        }
         model.optimize();
         List<String> spoje = new ArrayList<>();
         List<String> obsluzeneSpoje = new ArrayList<>();
@@ -158,7 +159,7 @@ public class MinNeobsluzeneSpoje {
                 p += smenaSofera.getSpoje().size();
             }
         }
-        VysledokMinSpoje vysledok = new VysledokMinSpoje(smeny.stream().mapToInt(s -> s.size()).sum(), p, 
+        VysledokMinSpoje vysledok = new VysledokMinSpoje(smeny.stream().mapToInt(s -> s.size()).sum(), p,
                 VypisSoferi.vytvorSmeny(turnusy, data.getCasVzdialenosti(), idGaraze),
                 VypisSoferi.vytvorSpojeLiniek(obsluzeneSpoje, data.getSpoje()));
         model.dispose();

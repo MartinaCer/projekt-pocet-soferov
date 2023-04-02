@@ -1,12 +1,15 @@
 package gui;
 
 import dto.Data;
+import java.awt.BorderLayout;
 import java.awt.EventQueue;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.AbstractAction;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -40,17 +43,18 @@ public class AcKonfiguracia extends AbstractAction {
                 frame.getContentPane().removeAll();
                 JPanel panel = new JPanel();
                 panel.setBounds(40, 80, 200, 30);
+                JPanel panelPolia = new JPanel();
+                panelPolia.setLayout(new BoxLayout(panelPolia, BoxLayout.PAGE_AXIS));
+                JPanel panelTlacitka = new JPanel();
+                panelTlacitka.setLayout(new FlowLayout());
                 JLabel garL = new JLabel("garáž");
                 JTextField gar = new JTextField(5);
-                gar.setBounds(50, 50, 150, 20);
                 gar.setText(konfiguracia.getGaraz().toString());
                 JLabel rezL = new JLabel("rezerva [min]");
                 JTextField rez = new JTextField(5);
-                rez.setBounds(50, 50, 150, 20);
                 rez.setText(String.valueOf(konfiguracia.getRezerva() / 60));
                 JLabel jazdaL = new JLabel("maximálna doba jazdy [h]");
                 JTextField jazda = new JTextField(5);
-                jazda.setBounds(50, 50, 150, 20);
                 jazda.setText(String.valueOf(konfiguracia.getMaxDobaJazdy() / 3600));
                 JLabel zmenaL = new JLabel("maximálna doba zmeny [h]");
                 JTextField zmena = new JTextField(5);
@@ -58,15 +62,12 @@ public class AcKonfiguracia extends AbstractAction {
                 zmena.setText(String.valueOf(konfiguracia.getMaxDobaSmeny() / 3600));
                 JLabel presL = new JLabel("prestávka v dobe jazdy [min]");
                 JTextField pres = new JTextField(5);
-                pres.setBounds(50, 50, 150, 20);
                 pres.setText(String.valueOf(konfiguracia.getPrestavkaVdobeJazdy() / 60));
                 JLabel soferL = new JLabel("cena šoféra [€/deň]");
                 JTextField sofer = new JTextField(5);
-                sofer.setBounds(50, 50, 150, 20);
                 sofer.setText(konfiguracia.getCenaSofera().toString());
                 JLabel kmL = new JLabel("cena za kilometer [€]");
                 JTextField km = new JTextField(5);
-                km.setBounds(50, 50, 150, 20);
                 km.setText(konfiguracia.getCenaKilometer().toString());
 
                 StringBuilder pMinS = new StringBuilder();
@@ -83,21 +84,16 @@ public class AcKonfiguracia extends AbstractAction {
 
                 JLabel pMinL = new JLabel("prestávka - minimálne trvanie [min]");
                 JTextField pMin = new JTextField(5);
-                pMin.setBounds(50, 50, 150, 20);
                 pMin.setText(pMinS.toString());
                 JLabel pSucetL = new JLabel("prestávka - minimálny súčet [min]");
                 JTextField pSucet = new JTextField(5);
-                pSucet.setBounds(50, 50, 150, 20);
                 pSucet.setText(pSucetS.toString());
                 JLabel pCasL = new JLabel("prestávka - časový interval [min]");
                 JTextField pCas = new JTextField(5);
-                pCas.setBounds(50, 50, 150, 20);
                 pCas.setText(pCasS.toString());
 
                 JButton demo = new JButton("demo hodnoty");
-                demo.setBounds(50, 100, 95, 30);
                 JButton b = new JButton("ulož");
-                b.setBounds(50, 100, 95, 30);
                 b.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
@@ -130,28 +126,30 @@ public class AcKonfiguracia extends AbstractAction {
                         JOptionPane.showMessageDialog(frame, "Hotovo.", "Zmena konfigurácie", JOptionPane.INFORMATION_MESSAGE);
                     }
                 });
-                panel.add(garL);
-                panel.add(gar);
-                panel.add(rezL);
-                panel.add(rez);
-                panel.add(jazdaL);
-                panel.add(jazda);
-                panel.add(zmenaL);
-                panel.add(zmena);
-                panel.add(presL);
-                panel.add(pres);
-                panel.add(soferL);
-                panel.add(sofer);
-                panel.add(kmL);
-                panel.add(km);
-                panel.add(pMinL);
-                panel.add(pMin);
-                panel.add(pSucetL);
-                panel.add(pSucet);
-                panel.add(pCasL);
-                panel.add(pCas);
-                panel.add(demo);
-                panel.add(b);
+                panelPolia.add(garL);
+                panelPolia.add(gar);
+                panelPolia.add(rezL);
+                panelPolia.add(rez);
+                panelPolia.add(jazdaL);
+                panelPolia.add(jazda);
+                panelPolia.add(zmenaL);
+                panelPolia.add(zmena);
+                panelPolia.add(presL);
+                panelPolia.add(pres);
+                panelPolia.add(soferL);
+                panelPolia.add(sofer);
+                panelPolia.add(kmL);
+                panelPolia.add(km);
+                panelPolia.add(pMinL);
+                panelPolia.add(pMin);
+                panelPolia.add(pSucetL);
+                panelPolia.add(pSucet);
+                panelPolia.add(pCasL);
+                panelPolia.add(pCas);
+                panelTlacitka.add(demo);
+                panelTlacitka.add(b);
+                panel.add(panelPolia, BorderLayout.PAGE_START);
+                frame.add(panelTlacitka, BorderLayout.PAGE_END);
                 frame.add(panel);
                 frame.revalidate();
                 frame.repaint();

@@ -15,9 +15,9 @@ import java.util.Map;
  */
 public final class Priority {
 
-    private final static int P1 = 100;
-    private final static int P2 = 50;
-    private final static int P3 = 10;
+    public final static int P1 = 100;
+    public final static int P2 = 50;
+    public final static int P3 = 10;
 
     private Priority() {
     }

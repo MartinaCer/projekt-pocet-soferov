@@ -20,7 +20,7 @@ public class GuiMain {
 
         JFrame frame = new JFrame("Aplikácia");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1500, 600);
+        frame.setSize(1000, 600);
 
         JMenuBar mb = new JMenuBar();
         JMenu menu = new JMenu("Možnosti");

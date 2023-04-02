@@ -38,7 +38,6 @@ public class AcVypisData extends AbstractAction {
             public void run() {
                 frame.getContentPane().removeAll();
                 JTabbedPane zalozky = new JTabbedPane();
-                zalozky.setBounds(30, 40, 200, 100);
 
                 List<Zastavka> zastavky = data.getZastavky() == null ? Collections.emptyList() : new ArrayList<>(data.getZastavky().values());
                 String dataZas[][] = new String[zastavky.size()][2];
@@ -72,7 +71,7 @@ public class AcVypisData extends AbstractAction {
 
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
                 List<Spoj> spoje = data.getSpoje() == null ? Collections.emptyList() : new ArrayList<>(data.getSpoje().values());
-                Collections.sort(spoje, Comparator.comparing(s -> s.getKluc().getLinka()));
+                Collections.sort(spoje, Comparator.comparing(s -> s.getKluc()));
                 String dataSpoj[][] = new String[spoje.size()][7];
                 for (int i = 0; i < spoje.size(); i++) {
                     Spoj spoj = spoje.get(i);

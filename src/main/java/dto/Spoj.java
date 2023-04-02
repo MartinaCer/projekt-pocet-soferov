@@ -86,7 +86,7 @@ public class Spoj {
         return mozneNasledovneZmenySofera;
     }
 
-    public static class KlucSpoja {
+    public static class KlucSpoja implements Comparable<KlucSpoja> {
 
         private final int id;
         private final int linka;
@@ -131,6 +131,23 @@ public class Spoj {
                 return false;
             }
             return this.linka == other.linka;
+        }
+
+        @Override
+        public int compareTo(KlucSpoja o) {
+            if (linka < o.getLinka()) {
+                return -1;
+            }
+            if (linka > o.getLinka()) {
+                return 1;
+            }
+            if (id < o.getId()) {
+                return -1;
+            }
+            if (id > o.getId()) {
+                return 1;
+            }
+            return 0;
         }
 
     }
