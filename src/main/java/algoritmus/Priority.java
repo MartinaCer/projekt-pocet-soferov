@@ -22,7 +22,7 @@ public final class Priority {
     private Priority() {
     }
 
-    public static void nastavPriority(Map<KlucSpoja, Spoj> spoje, Strategia strategia, Map<KlucSpoja, Integer> rucnePriority) {
+    public static void nastavPriority(Map<KlucSpoja, Spoj> spoje, Strategia strategia, Map<KlucSpoja, Integer> rucnePriority, int predvolenaPriorita) {
         Map<Integer, Map<Integer, List<Spoj>>> linky = new HashMap<>();
         spoje.values().forEach(spoj
                 -> linky.computeIfAbsent(spoj.getKluc().getLinka(), k -> new HashMap<>())
@@ -111,7 +111,7 @@ public final class Priority {
                         break;
                     case RUCNE:
                         for (Spoj spoj : linkaSmer) {
-                            Integer priorita = rucnePriority.get(spoj.getKluc());
+                            Integer priorita = rucnePriority.getOrDefault(spoj.getKluc(), predvolenaPriorita);
                             if (priorita == null) {
                                 throw new IllegalArgumentException();
                             }

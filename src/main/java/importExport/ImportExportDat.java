@@ -110,7 +110,24 @@ public final class ImportExportDat {
         is.close();
         return spoje;
     }
-    
+
+    public static Map<KlucSpoja, Integer> naciatajPriority(File subor) throws IOException {
+        Map<KlucSpoja, Integer> priority = new HashMap<>();
+        InputStream is = new FileInputStream(subor);
+        BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+        String riadok;
+        while ((riadok = br.readLine()) != null) {
+            String[] spoj = riadok.split(";");
+            int idLinky = Integer.valueOf(spoj[0]);
+            int idSpoja = Integer.valueOf(spoj[1]);
+            int priorita = Integer.valueOf(spoj[2]);
+            priority.put(new KlucSpoja(idSpoja, idLinky), priorita);
+        }
+        br.close();
+        is.close();
+        return priority;
+    }
+
     public static void vypisTurnusyDoPdf(List<List<Spoj>> turnusy, String nazov) throws FileNotFoundException, DocumentException {
         Document document = new Document(PageSize.A4.rotate());
         PdfWriter.getInstance(document, new FileOutputStream(new File(nazov + ".pdf")));
