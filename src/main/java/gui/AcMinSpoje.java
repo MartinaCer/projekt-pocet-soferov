@@ -1,28 +1,28 @@
 package gui;
 
 import algoritmus.Priority;
+import static algoritmus.Priority.P1;
+import static algoritmus.Priority.P2;
 import algoritmus.Priority.Strategia;
+import static algoritmus.Priority.Strategia.PRVY_POSLEDNY;
 import static algoritmus.Priority.Strategia.RUCNE;
 import com.itextpdf.text.DocumentException;
 import dto.Data;
 import dto.Spoj;
 import dto.Spoj.KlucSpoja;
-import dto.Zastavka;
 import gurobi.GRBException;
 import gurobiModel.MinNeobsluzeneSpoje;
-import gurobiModelVypisy.SmenaSofera;
 import gurobiModelVypisy.SpojeLinky;
 import gurobiModelVypisy.SpojeLinky.SpojLinky;
 import importExport.ImportExportDat;
+import importExport.ImportExportDat.PriorityImport;
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,10 +30,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javafx.scene.layout.Pane;
 import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
@@ -77,28 +74,21 @@ public class AcMinSpoje extends AbstractAction {
                     JComboBox pri = new JComboBox(Priority.Strategia.values());
                     JLabel autL = new JLabel("počet autobusov");
                     JTextField aut = new JTextField(3);
-                    aut.setBounds(50, 50, 150, 20);
                     JLabel sofL = new JLabel("počet šoférov");
                     JTextField sof = new JTextField(3);
-                    sof.setBounds(50, 50, 150, 20);
                     JLabel casL = new JLabel("časový limit [s]");
                     JTextField cas = new JTextField(5);
-                    cas.setBounds(50, 50, 150, 20);
                     JButton b = new JButton("vypočítaj");
-                    b.setBounds(50, 100, 95, 30);
                     b.addActionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
                             frame.getContentPane().removeAll();
                             if ((Strategia) pri.getSelectedItem() == Strategia.RUCNE) {
-                                JPanel panel = new JPanel();
+                                JPanel stPanel = new JPanel();
                                 JButton subB = new JButton("priority");
-                                subB.setBounds(50, 100, 95, 30);
                                 JLabel subL = new JLabel("chýba súbor");
                                 JButton impB = new JButton("importuj");
-                                impB.setBounds(50, 100, 95, 30);
                                 JButton rucB = new JButton("ručne");
-                                rucB.setBounds(50, 100, 95, 30);
                                 subB.addActionListener(new ActionListener() {
                                     @Override
                                     public void actionPerformed(ActionEvent e) {
@@ -115,56 +105,12 @@ public class AcMinSpoje extends AbstractAction {
                                     public void actionPerformed(ActionEvent e) {
                                         if (subor != null) {
                                             try {
-                                                Map<KlucSpoja, Integer> priority = ImportExportDat.naciatajPriority(subor);
+                                                PriorityImport priority = ImportExportDat.naciatajPriority(subor);
                                                 JOptionPane.showMessageDialog(frame, "Hotovo.", "Načítanie dát", JOptionPane.INFORMATION_MESSAGE);
                                                 String predvolena = JOptionPane.showInputDialog(frame, "Predvolená priorita",
                                                         "Ručné nastavenie priorít", JOptionPane.INFORMATION_MESSAGE);
-                                                frame.getContentPane().removeAll();
-                                                JPanel panel = new JPanel();
-                                                JButton nasB = new JButton("nastav");
-                                                nasB.setBounds(50, 100, 95, 30);
-                                                JButton vypB = new JButton("vypočítaj");
-                                                vypB.setBounds(50, 100, 95, 30);
-                                                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-                                                List<Spoj> spoje = data.getSpoje() == null ? Collections.emptyList() : new ArrayList<>(data.getSpoje().values());
-                                                Collections.sort(spoje, Comparator.comparing(s -> s.getKluc()));
-                                                String dataSpoj[][] = new String[spoje.size()][8];
-                                                for (int i = 0; i < spoje.size(); i++) {
-                                                    Spoj spoj = spoje.get(i);
-                                                    dataSpoj[i][0] = String.valueOf(spoj.getKluc().getId());
-                                                    dataSpoj[i][1] = String.valueOf(spoj.getKluc().getLinka());
-                                                    dataSpoj[i][2] = spoj.getMiestoOdchodu().getId() + " - " + spoj.getMiestoOdchodu().getNazov();
-                                                    dataSpoj[i][3] = formatter.format(spoj.getCasOdchodu());
-                                                    dataSpoj[i][4] = spoj.getMiestoPrichodu().getId() + " - " + spoj.getMiestoPrichodu().getNazov();
-                                                    dataSpoj[i][5] = formatter.format(spoj.getCasPrichodu());
-                                                    dataSpoj[i][6] = String.valueOf(spoj.getKilometre());
-                                                    dataSpoj[i][7] = priority.containsKey(spoj.getKluc()) ? String.valueOf(priority.get(spoj.getKluc())) : "";
-                                                }
-                                                String stlSpoj[] = {"id", "linka", "miesto odchodu", "čas odchodu", "miesto príchodu", "čas príchodu", "vzdialenosť [km]", "priorita"};
-                                                JTable jtSpoj = new JTable(dataSpoj, stlSpoj);
-                                                jtSpoj.setBounds(30, 40, 200, 100);
-                                                JScrollPane spSpoj = new JScrollPane(jtSpoj);
-                                                spSpoj.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-                                                spSpoj.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-                                                vypB.addActionListener(new ActionListener() {
-                                                    @Override
-                                                    public void actionPerformed(ActionEvent e) {
-                                                        Map<KlucSpoja, Integer> priority = new HashMap<>();
-                                                        for (int i = 0; i < jtSpoj.getRowCount(); i++) {
-                                                            String hodnota = (String) jtSpoj.getValueAt(i, 7);
-                                                            if (!hodnota.isEmpty()) {
-                                                                priority.put(new KlucSpoja(Integer.valueOf((String) jtSpoj.getValueAt(0, 7)), Integer.valueOf((String) jtSpoj.getValueAt(1, 7))), Integer.valueOf((String) jtSpoj.getValueAt(i, 7)));
-                                                            }
-                                                        }
-                                                        Priority.nastavPriority(data.getSpoje(), RUCNE, priority, Integer.valueOf(predvolena));
-                                                        vypocitajModel(Integer.valueOf(aut.getText()), Integer.valueOf(sof.getText()), Integer.valueOf(cas.getText()));
-                                                    }
-                                                });
-                                                panel.add(nasB);
-                                                panel.add(spSpoj);
-                                                frame.add(panel);
-                                                frame.revalidate();
-                                                frame.repaint();
+                                                vypocitajRucne(Integer.valueOf(aut.getText()), Integer.valueOf(sof.getText()), Integer.valueOf(cas.getText()),
+                                                        Integer.valueOf(predvolena), priority);
                                             } catch (IOException ex) {
                                                 JOptionPane.showMessageDialog(frame, "Zlý formát súboru.", "Načítanie dát", JOptionPane.ERROR_MESSAGE);
                                             }
@@ -176,62 +122,20 @@ public class AcMinSpoje extends AbstractAction {
                                     public void actionPerformed(ActionEvent e) {
                                         String predvolena = JOptionPane.showInputDialog(frame, "Predvolená priorita",
                                                 "Ručné nastavenie priorít", JOptionPane.INFORMATION_MESSAGE);
-                                        frame.getContentPane().removeAll();
-                                        JPanel panel = new JPanel();
-                                        JButton vypB = new JButton("vypočítaj");
-                                        vypB.setBounds(50, 100, 95, 30);
-                                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-                                        List<Spoj> spoje = data.getSpoje() == null ? Collections.emptyList() : new ArrayList<>(data.getSpoje().values());
-                                        Collections.sort(spoje, Comparator.comparing(s -> s.getKluc()));
-                                        String dataSpoj[][] = new String[spoje.size()][8];
-                                        for (int i = 0; i < spoje.size(); i++) {
-                                            Spoj spoj = spoje.get(i);
-                                            dataSpoj[i][0] = String.valueOf(spoj.getKluc().getId());
-                                            dataSpoj[i][1] = String.valueOf(spoj.getKluc().getLinka());
-                                            dataSpoj[i][2] = spoj.getMiestoOdchodu().getId() + " - " + spoj.getMiestoOdchodu().getNazov();
-                                            dataSpoj[i][3] = formatter.format(spoj.getCasOdchodu());
-                                            dataSpoj[i][4] = spoj.getMiestoPrichodu().getId() + " - " + spoj.getMiestoPrichodu().getNazov();
-                                            dataSpoj[i][5] = formatter.format(spoj.getCasPrichodu());
-                                            dataSpoj[i][6] = String.valueOf(spoj.getKilometre());
-                                            dataSpoj[i][7] = "";
-                                        }
-                                        String stlSpoj[] = {"id", "linka", "miesto odchodu", "čas odchodu", "miesto príchodu", "čas príchodu", "vzdialenosť [km]", "priorita"};
-                                        JTable jtSpoj = new JTable(dataSpoj, stlSpoj);
-                                        jtSpoj.setBounds(30, 40, 200, 100);
-                                        JScrollPane spSpoj = new JScrollPane(jtSpoj);
-                                        spSpoj.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-                                        spSpoj.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-                                        vypB.addActionListener(new ActionListener() {
-                                            @Override
-                                            public void actionPerformed(ActionEvent e) {
-                                                Map<KlucSpoja, Integer> priority = new HashMap<>();
-                                                for (int i = 0; i < jtSpoj.getRowCount(); i++) {
-                                                    String hodnota = (String) jtSpoj.getValueAt(i, 7);
-                                                    if (!hodnota.isEmpty()) {
-                                                        priority.put(new KlucSpoja(Integer.valueOf((String) jtSpoj.getValueAt(0, 7)), Integer.valueOf((String) jtSpoj.getValueAt(1, 7))), Integer.valueOf((String) jtSpoj.getValueAt(i, 7)));
-                                                    }
-                                                }
-                                                Priority.nastavPriority(data.getSpoje(), RUCNE, priority, Integer.valueOf(predvolena));
-                                                vypocitajModel(Integer.valueOf(aut.getText()), Integer.valueOf(sof.getText()), Integer.valueOf(cas.getText()));
-                                            }
-                                        });
-                                        panel.add(vypB);
-                                        panel.add(spSpoj);
-                                        frame.add(panel);
-                                        frame.revalidate();
-                                        frame.repaint();
+                                        vypocitajRucne(Integer.valueOf(aut.getText()), Integer.valueOf(sof.getText()), Integer.valueOf(cas.getText()),
+                                                Integer.valueOf(predvolena), null);
                                     }
                                 });
-                                panel.add(subB);
-                                panel.add(subL);
-                                panel.add(impB);
-                                panel.add(rucB);
-                                frame.add(panel);
+                                stPanel.add(subB);
+                                stPanel.add(subL);
+                                stPanel.add(impB);
+                                stPanel.add(rucB);
+                                frame.add(stPanel);
                                 frame.revalidate();
                                 frame.repaint();
                             } else {
                                 Priority.nastavPriority(data.getSpoje(), (Strategia) pri.getSelectedItem(), null, 0);
-                                vypocitajModel(Integer.valueOf(aut.getText()), Integer.valueOf(sof.getText()), Integer.valueOf(cas.getText()));
+                                vypocitajModel(Integer.valueOf(aut.getText()), Integer.valueOf(sof.getText()), Integer.valueOf(cas.getText()), (Strategia) pri.getSelectedItem());
                             }
                         }
                     });
@@ -253,7 +157,58 @@ public class AcMinSpoje extends AbstractAction {
         EventQueue.invokeLater(runnable);
     }
 
-    private void vypocitajModel(int pocetAutobusov, int pocetSoferov, int limit) {
+    private void vypocitajRucne(int pocetAutobusov, int pocetSoferov, int limit, int predvolena, PriorityImport priority) {
+        frame.getContentPane().removeAll();
+        JPanel impPanel = new JPanel(new BorderLayout());
+        JButton vypB = new JButton("vypočítaj");
+        vypB.setBounds(50, 100, 95, 30);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+        List<Spoj> spoje = data.getSpoje() == null ? Collections.emptyList() : new ArrayList<>(data.getSpoje().values());
+        Collections.sort(spoje, Comparator.comparing(s -> s.getKluc()));
+        String dataSpoj[][] = new String[spoje.size()][9];
+        for (int i = 0; i < spoje.size(); i++) {
+            Spoj spoj = spoje.get(i);
+            dataSpoj[i][0] = String.valueOf(spoj.getKluc().getId());
+            dataSpoj[i][1] = String.valueOf(spoj.getKluc().getLinka());
+            dataSpoj[i][2] = spoj.getMiestoOdchodu().getId() + " - " + spoj.getMiestoOdchodu().getNazov();
+            dataSpoj[i][3] = formatter.format(spoj.getCasOdchodu());
+            dataSpoj[i][4] = spoj.getMiestoPrichodu().getId() + " - " + spoj.getMiestoPrichodu().getNazov();
+            dataSpoj[i][5] = formatter.format(spoj.getCasPrichodu());
+            dataSpoj[i][6] = String.valueOf(spoj.getKilometre());
+            dataSpoj[i][7] = priority == null ? "" : priority.getPriority().containsKey(spoj.getKluc()) ? String.valueOf(priority.getPriority().get(spoj.getKluc())) : "";
+            dataSpoj[i][8] = priority == null ? "" : priority.getMusiObsluzit().contains(spoj.getKluc()) ? "1" : "";
+        }
+        String stlSpoj[] = {"id", "linka", "miesto odchodu", "čas odchodu", "miesto príchodu", "čas príchodu", "vzdialenosť [km]", "priorita", "musí obslúžiť"};
+        JTable jtSpoj = new JTable(dataSpoj, stlSpoj);
+        JScrollPane spSpoj = new JScrollPane(jtSpoj);
+        spSpoj.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        spSpoj.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        vypB.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Map<KlucSpoja, Integer> priority = new HashMap<>();
+                for (int i = 0; i < jtSpoj.getRowCount(); i++) {
+                    KlucSpoja kluc = new KlucSpoja(Integer.valueOf((String) jtSpoj.getValueAt(i, 0)), Integer.valueOf((String) jtSpoj.getValueAt(i, 1)));
+                    String hodnota = (String) jtSpoj.getValueAt(i, 7);
+                    String musiObsluzit = (String) jtSpoj.getValueAt(i, 8);
+                    if (!hodnota.isEmpty()) {
+                        priority.put(kluc, Integer.valueOf((String) jtSpoj.getValueAt(i, 7)));
+                    }
+                    data.getSpoje().get(kluc).setMusiObsluzit(musiObsluzit.equals("1"));
+                }
+                Priority.nastavPriority(data.getSpoje(), RUCNE, priority, predvolena);
+                vypocitajModel(pocetAutobusov, pocetSoferov, limit, RUCNE);
+            }
+        });
+        impPanel.add(spSpoj, BorderLayout.CENTER);
+        impPanel.add(vypB, BorderLayout.PAGE_END);
+        frame.add(impPanel);
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    private void vypocitajModel(int pocetAutobusov, int pocetSoferov, int limit, Strategia strategia) {
+        frame.getContentPane().removeAll();
         MinNeobsluzeneSpoje model = new MinNeobsluzeneSpoje();
         try {
             MinNeobsluzeneSpoje.VysledokMinSpoje vysledok = model.optimalizuj(data,
@@ -266,6 +221,78 @@ public class AcMinSpoje extends AbstractAction {
             text.append("Počet šoférov: " + vysledok.getPocetSoferov() + "\n");
             text.append("Počet turnusov: " + vysledok.getSmeny().size() + "\n");
             text.append("Počet obslúžených spojov: " + vysledok.getPocetObsluzenych());
+            switch (strategia) {
+                case ROVNAKE:
+                    break;
+                case PRVY_POSLEDNY:
+                    int pocetNastavenych = 0;
+                    int pocetObsluzenych = 0;
+                    for (SpojeLinky spojeLinky : vysledok.getLinky()) {
+                        for (List<SpojLinky> linka : spojeLinky.getSpoje().values()) {
+                            for (SpojLinky spoj : linka) {
+                                if (spoj.getSpoj().getPriorita() == P2) {
+                                    pocetNastavenych++;
+                                    if (spoj.isObsluzeny()) {
+                                        pocetObsluzenych++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    text.append("\nPočet spojov s prioritou: " + pocetNastavenych + "\n");
+                    text.append("Počet obslúžených spojov s prioritou: " + pocetObsluzenych);
+                    break;
+                case KAZDY_DRUHY:
+                    int pocetNastavenych2 = 0;
+                    int pocetObsluzenych2 = 0;
+                    for (SpojeLinky spojeLinky : vysledok.getLinky()) {
+                        for (List<SpojLinky> linka : spojeLinky.getSpoje().values()) {
+                            for (SpojLinky spoj : linka) {
+                                if (spoj.getSpoj().getPriorita() == P2) {
+                                    pocetNastavenych2++;
+                                    if (spoj.isObsluzeny()) {
+                                        pocetObsluzenych2++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    text.append("\nPočet spojov s prioritou: " + pocetNastavenych2 + "\n");
+                    text.append("Počet obslúžených spojov s prioritou: " + pocetObsluzenych2);
+                    break;
+                case PRVY_POSLEDNY_KAZDY_DRUHY:
+                    int pocetNastavenychTop = 0;
+                    int pocetObsluzenychTop = 0;
+                    int pocetNastavenych3 = 0;
+                    int pocetObsluzenych3 = 0;
+                    for (SpojeLinky spojeLinky : vysledok.getLinky()) {
+                        for (List<SpojLinky> linka : spojeLinky.getSpoje().values()) {
+                            for (SpojLinky spoj : linka) {
+                                if (spoj.getSpoj().getPriorita() == P1) {
+                                    pocetNastavenychTop++;
+                                    if (spoj.isObsluzeny()) {
+                                        pocetObsluzenychTop++;
+                                    }
+                                }
+                                if (spoj.getSpoj().getPriorita() == P2) {
+                                    pocetNastavenych3++;
+                                    if (spoj.isObsluzeny()) {
+                                        pocetObsluzenych3++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    text.append("\nPočet spojov s top prioritou: " + pocetNastavenychTop + "\n");
+                    text.append("Počet obslúžených spojov s top prioritou: " + pocetObsluzenychTop + "\n");
+                    text.append("Počet spojov s prioritou: " + pocetNastavenych3 + "\n");
+                    text.append("Počet obslúžených spojov s prioritou: " + pocetObsluzenych3);
+                    break;
+                case RUCNE:
+                    break;
+                default:
+                    break;
+            }
             textArea.setText(text.toString());
             JButton expZmenaB = new JButton("exportuj zmeny");
             expZmenaB.setBounds(50, 100, 95, 30);
@@ -301,97 +328,13 @@ public class AcMinSpoje extends AbstractAction {
                     }
                 }
             });
-
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-            JPanel panelZmeny = new JPanel();
-            panelZmeny.setLayout(new BoxLayout(panelZmeny, BoxLayout.PAGE_AXIS));
-            int poradieTurnusu = 1;
-            for (List<SmenaSofera> turnus : vysledok.getSmeny()) {
-                JPanel panelTurnus = new JPanel();
-                panelTurnus.setLayout(new BoxLayout(panelTurnus, BoxLayout.PAGE_AXIS));
-                int poradieZmeny = 1;
-                for (SmenaSofera zmena : turnus) {
-                    String dataSpoj[][] = new String[zmena.getSpoje().size() + 2][7];
-                    dataSpoj[0][0] = "";
-                    dataSpoj[0][1] = "";
-                    dataSpoj[0][2] = "Garáž";
-                    dataSpoj[0][3] = formatter.format(zmena.getSpoje().get(0).getSpoj().getCasOdchodu().minusSeconds(zmena.getCestaZgaraze()));
-                    dataSpoj[0][4] = zmena.getSpoje().get(0).getSpoj().getMiestoOdchodu().getId() + " - " + zmena.getSpoje().get(0).getSpoj().getMiestoOdchodu().getNazov();
-                    dataSpoj[0][5] = formatter.format(zmena.getSpoje().get(0).getSpoj().getCasOdchodu());
-                    dataSpoj[0][6] = "";
-                    for (int i = 0; i < zmena.getSpoje().size(); i++) {
-                        Spoj spoj = zmena.getSpoje().get(i).getSpoj();
-                        dataSpoj[i + 1][0] = String.valueOf(spoj.getKluc().getId());
-                        dataSpoj[i + 1][1] = String.valueOf(spoj.getKluc().getLinka());
-                        dataSpoj[i + 1][2] = spoj.getMiestoOdchodu().getId() + " - " + spoj.getMiestoOdchodu().getNazov();
-                        dataSpoj[i + 1][3] = formatter.format(spoj.getCasOdchodu());
-                        dataSpoj[i + 1][4] = spoj.getMiestoPrichodu().getId() + " - " + spoj.getMiestoPrichodu().getNazov();
-                        dataSpoj[i + 1][5] = formatter.format(spoj.getCasPrichodu());
-                        dataSpoj[i + 1][6] = formatter.format(LocalTime.ofSecondOfDay(zmena.getSpoje().get(i).getPrestavkaPoSpoji()));
-                    }
-                    dataSpoj[zmena.getSpoje().size() + 1][0] = "";
-                    dataSpoj[zmena.getSpoje().size() + 1][1] = "";
-                    dataSpoj[zmena.getSpoje().size() + 1][2] = zmena.getSpoje().get(turnus.size() - 1).getSpoj().getMiestoPrichodu().getId() + " - " + zmena.getSpoje().get(turnus.size() - 1).getSpoj().getMiestoPrichodu().getNazov();
-                    dataSpoj[zmena.getSpoje().size() + 1][3] = formatter.format(zmena.getSpoje().get(zmena.getSpoje().size() - 1).getSpoj().getCasPrichodu());
-                    dataSpoj[zmena.getSpoje().size() + 1][4] = "Garáž";
-                    dataSpoj[zmena.getSpoje().size() + 1][5] = formatter.format(zmena.getSpoje().get(zmena.getSpoje().size() - 1).getSpoj().getCasPrichodu().plusSeconds(zmena.getCestaDoGaraze()));
-                    dataSpoj[zmena.getSpoje().size() + 1][6] = "";
-                    String stlSpoj[] = {"id", "linka", "miesto odchodu", "čas odchodu", "miesto príchodu", "čas príchodu", "prestávka"};
-                    JTable jtSpoj = new JTable(dataSpoj, stlSpoj);
-                    jtSpoj.setPreferredScrollableViewportSize(new Dimension((int) jtSpoj.getPreferredSize().getWidth(), jtSpoj.getRowHeight() * (zmena.getSpoje().size() + 2)));
-                    JScrollPane scSpoj = new JScrollPane(jtSpoj);
-                    scSpoj.setBorder(BorderFactory.createTitledBorder("Smena " + poradieZmeny + " - trvanie smeny " + LocalTime.ofSecondOfDay(zmena.trvanieSmeny()).format(formatter)
-                            + " - trvanie jazdy " + LocalTime.ofSecondOfDay(zmena.trvanieJazdy()).format(formatter)));
-                    panelTurnus.add(scSpoj);
-                    poradieZmeny++;
-                }
-                JScrollPane scTurnus = new JScrollPane(panelTurnus);
-                scTurnus.setBorder(BorderFactory.createTitledBorder("Turnus " + poradieTurnusu + " - celkové trvanie "
-                        + LocalTime.ofSecondOfDay(turnus.get(turnus.size() - 1).koniecSmeny() - turnus.get(0).zaciatokSmeny()).format(formatter)));
-                panelZmeny.add(scTurnus);
-                poradieTurnusu++;
-            }
-
-            JPanel panelLinky = new JPanel();
-            panelLinky.setLayout(new BoxLayout(panelLinky, BoxLayout.PAGE_AXIS));
-            for (SpojeLinky spojeLinky : vysledok.getLinky()) {
-                JPanel panelSmer = new JPanel();
-                panelSmer.setLayout(new BoxLayout(panelSmer, BoxLayout.PAGE_AXIS));
-                int poradieSmeru = 1;
-                for (List<SpojLinky> spojLinky : spojeLinky.getSpoje().values()) {
-                    Collections.sort(spojLinky, Comparator.comparing(sp -> sp.getSpoj().getCasOdchodu()));
-                    String dataSpoj[][] = new String[spojLinky.size()][6];
-                    for (int i = 0; i < spojLinky.size(); i++) {
-                        Spoj spoj = spojLinky.get(i).getSpoj();
-                        dataSpoj[i][0] = String.valueOf(spoj.getKluc().getId());
-                        dataSpoj[i][1] = spoj.getMiestoOdchodu().getId() + " - " + spoj.getMiestoOdchodu().getNazov();
-                        dataSpoj[i][2] = formatter.format(spoj.getCasOdchodu());
-                        dataSpoj[i][3] = spoj.getMiestoPrichodu().getId() + " - " + spoj.getMiestoPrichodu().getNazov();
-                        dataSpoj[i][4] = formatter.format(spoj.getCasPrichodu());
-                        dataSpoj[i][5] = spojLinky.get(i).isObsluzeny() ? "Áno" : "Nie";
-                    }
-                    String stlSpoj[] = {"spoj", "miesto odchodu", "čas odchodu", "miesto príchodu", "čas príchodu", "obslúžený"};
-                    JTable jtSpoj = new JTable(dataSpoj, stlSpoj);
-                    jtSpoj.setPreferredScrollableViewportSize(new Dimension((int) jtSpoj.getPreferredSize().getWidth(), jtSpoj.getRowHeight() * (spojLinky.size())));
-                    JScrollPane scSpoj = new JScrollPane(jtSpoj);
-                    scSpoj.setBorder(BorderFactory.createTitledBorder(BorderFactory.createTitledBorder("Smer " + poradieSmeru + " - obslúžených " + spojLinky.stream().filter(s -> s.isObsluzeny()).count()
-                            + " z " + spojLinky.size() + " spojov")));
-                    panelSmer.add(scSpoj);
-                    poradieSmeru++;
-                }
-                JScrollPane scTurnus = new JScrollPane(panelSmer);
-                scTurnus.setBorder(BorderFactory.createTitledBorder(BorderFactory.createTitledBorder("Linka " + spojeLinky.getLinka())));
-                panelLinky.add(scTurnus);
-                poradieTurnusu++;
-            }
-
             panel.add(textArea);
             panel.add(expZmenaB);
             panel.add(expLinkaB);
-            JScrollPane scZmeny = new JScrollPane(panelZmeny);
+            JScrollPane scZmeny = new JScrollPane(GuiTabulky.vytvorZmeny(vysledok.getSmeny()));
             scZmeny.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
             scZmeny.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-            JScrollPane scLinky = new JScrollPane(panelLinky);
+            JScrollPane scLinky = new JScrollPane(GuiTabulky.vytvorLinky(vysledok.getLinky()));
             scLinky.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
             scLinky.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
             JTabbedPane zalozky = new JTabbedPane();

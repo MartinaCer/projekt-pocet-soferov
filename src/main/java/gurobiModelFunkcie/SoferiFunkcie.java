@@ -1,17 +1,23 @@
 package gurobiModelFunkcie;
 
+import dto.Data;
 import dto.Spoj;
+import dto.Spoj.KlucSpoja;
 import gurobi.GRB;
 import gurobi.GRBException;
 import gurobi.GRBLinExpr;
 import gurobi.GRBModel;
 import gurobi.GRBVar;
+import gurobiModelVypisy.SmenaSofera;
+import gurobiModelVypisy.SpojSofera;
+import gurobiModelVypisy.VypisSoferi;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import konfiguracia.Konstanty;
 import static konfiguracia.Konstanty.PRESTAVKA_V_DOBE_JAZDY;
+import static konfiguracia.Konstanty.PRESTAVKY;
 
 /**
  *
@@ -24,7 +30,7 @@ public class SoferiFunkcie {
     private SoferiFunkcie() {
     }
 
-    public static double[] vytvorPoleVzdialenostiZaDoGaraze(GRBVar[] premenneYij, Map<Spoj.KlucSpoja, Spoj> spoje,
+    public static double[] vytvorPoleVzdialenostiZaDoGaraze(GRBVar[] premenneYij, Map<KlucSpoja, Spoj> spoje,
             Map<Integer, Map<Integer, Integer>> vzdialenosti, int idGaraze, int cena) throws GRBException {
         double[] pole = new double[premenneYij.length];
         for (int i = 0; i < premenneYij.length; i++) {
@@ -40,29 +46,29 @@ public class SoferiFunkcie {
         return pole;
     }
 
-    public static Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> vytvorPremenneYij(GRBModel model, List<Spoj> spoje) throws GRBException {
-        Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenne = new HashMap<>();
+    public static Map<KlucSpoja, Map<KlucSpoja, GRBVar>> vytvorPremenneYij(GRBModel model, List<Spoj> spoje) throws GRBException {
+        Map<KlucSpoja, Map<KlucSpoja, GRBVar>> premenne = new HashMap<>();
         for (Spoj iSpoj : spoje) {
-            Spoj.KlucSpoja iKluc = iSpoj.getKluc();
-            Map<Spoj.KlucSpoja, GRBVar> iMapa = premenne.computeIfAbsent(iKluc, k -> new HashMap<>());
+            KlucSpoja iKluc = iSpoj.getKluc();
+            Map<KlucSpoja, GRBVar> iMapa = premenne.computeIfAbsent(iKluc, k -> new HashMap<>());
             for (Spoj jSpoj : iSpoj.getMozneNasledovneZmenySofera()) {
-                Spoj.KlucSpoja jKluc = jSpoj.getKluc();
+                KlucSpoja jKluc = jSpoj.getKluc();
                 iMapa.put(jKluc, model.addVar(0, 1, 0, GRB.BINARY, "y_" + iKluc.toString() + "_" + jKluc.toString()));
             }
         }
         return premenne;
     }
 
-    public static Map<Spoj.KlucSpoja, GRBVar> vytvorPremenneSjTj(GRBModel model, List<Spoj> spoje, String meno) throws GRBException {
-        Map<Spoj.KlucSpoja, GRBVar> premenne = new HashMap<>();
+    public static Map<KlucSpoja, GRBVar> vytvorPremenneSjTj(GRBModel model, List<Spoj> spoje, String meno) throws GRBException {
+        Map<KlucSpoja, GRBVar> premenne = new HashMap<>();
         for (Spoj spoj : spoje) {
             premenne.put(spoj.getKluc(), model.addVar(0, meno.equals("s") ? Konstanty.MAX_DOBA_SMENY : Konstanty.MAX_DOBA_JAZDY, 0, GRB.CONTINUOUS, meno + "_" + spoj.getKluc().toString()));
         }
         return premenne;
     }
 
-    public static GRBLinExpr[] vytvorPodmienkySucetXijYijPodlaJaVi(Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenneXij,
-            Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenneYij, Map<Spoj.KlucSpoja, GRBVar> premenneVi, List<Spoj> spoje) {
+    public static GRBLinExpr[] vytvorPodmienkySucetXijYijPodlaJaVi(Map<KlucSpoja, Map<KlucSpoja, GRBVar>> premenneXij,
+            Map<KlucSpoja, Map<KlucSpoja, GRBVar>> premenneYij, Map<KlucSpoja, GRBVar> premenneVi, List<Spoj> spoje) {
         List<GRBLinExpr> podmienky = new ArrayList<>();
         for (Spoj iSpoj : spoje) {
             GRBLinExpr podmienka = new GRBLinExpr();
@@ -74,8 +80,8 @@ public class SoferiFunkcie {
         return VseobecneFunkcie.vytvorPolePodmienok(podmienky);
     }
 
-    public static GRBLinExpr[] vytvorPodmienkySucetXijYijPodlaIaUj(Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenneXij,
-            Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenneYij, Map<Spoj.KlucSpoja, GRBVar> premenneUj, List<Spoj> spoje) {
+    public static GRBLinExpr[] vytvorPodmienkySucetXijYijPodlaIaUj(Map<KlucSpoja, Map<KlucSpoja, GRBVar>> premenneXij,
+            Map<KlucSpoja, Map<KlucSpoja, GRBVar>> premenneYij, Map<KlucSpoja, GRBVar> premenneUj, List<Spoj> spoje) {
         List<GRBLinExpr> podmienky = new ArrayList<>();
         for (Spoj jSpoj : spoje) {
             GRBLinExpr podmienka = new GRBLinExpr();
@@ -87,7 +93,7 @@ public class SoferiFunkcie {
         return VseobecneFunkcie.vytvorPolePodmienok(podmienky);
     }
 
-    public static GRBLinExpr[] vytvorPodmienkySjTjGaraz(Map<Spoj.KlucSpoja, GRBVar> premenne,
+    public static GRBLinExpr[] vytvorPodmienkySjTjGaraz(Map<KlucSpoja, GRBVar> premenne,
             Map<Integer, Map<Integer, Integer>> vzdialenosti, int idGaraze, List<Spoj> spoje) throws GRBException {
         List<GRBLinExpr> podmienky = new ArrayList<>();
         for (Spoj spoj : spoje) {
@@ -99,8 +105,8 @@ public class SoferiFunkcie {
         return VseobecneFunkcie.vytvorPolePodmienok(podmienky);
     }
 
-    public static void pridajPodmienkySjTjPreXij(GRBModel model, Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenneXij,
-            Map<Spoj.KlucSpoja, GRBVar> premenne, Map<Integer, Map<Integer, Integer>> vzdialenosti,
+    public static void pridajPodmienkySjTjPreXij(GRBModel model, Map<KlucSpoja, Map<KlucSpoja, GRBVar>> premenneXij,
+            Map<KlucSpoja, GRBVar> premenne, Map<Integer, Map<Integer, Integer>> vzdialenosti,
             List<Spoj> spoje, String cisloPodmienky, boolean sJ) throws GRBException {
         int poradiePodmienky = 1;
         for (Spoj jSpoj : spoje) {
@@ -124,8 +130,8 @@ public class SoferiFunkcie {
         }
     }
 
-    public static void pridajPodmienkySjTjPreYij(GRBModel model, Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenneYij,
-            Map<Spoj.KlucSpoja, GRBVar> premenne, Map<Integer, Map<Integer, Integer>> vzdialenosti,
+    public static void pridajPodmienkySjTjPreYij(GRBModel model, Map<KlucSpoja, Map<KlucSpoja, GRBVar>> premenneYij,
+            Map<KlucSpoja, GRBVar> premenne, Map<Integer, Map<Integer, Integer>> vzdialenosti,
             int idGaraze, List<Spoj> spoje, String cisloPodmienky) throws GRBException {
         int poradiePodmienky = 1;
         Map<Integer, Integer> vzdialenostiGaraz = vzdialenosti.get(idGaraze);
@@ -141,8 +147,8 @@ public class SoferiFunkcie {
         }
     }
 
-    public static void pridajPodmienkySjTjPreUj(GRBModel model, Map<Spoj.KlucSpoja, GRBVar> premenneUj,
-            Map<Spoj.KlucSpoja, GRBVar> premenne, Map<Integer, Map<Integer, Integer>> vzdialenosti,
+    public static void pridajPodmienkySjTjPreUj(GRBModel model, Map<KlucSpoja, GRBVar> premenneUj,
+            Map<KlucSpoja, GRBVar> premenne, Map<Integer, Map<Integer, Integer>> vzdialenosti,
             int idGaraze, List<Spoj> spoje, String cisloPodmienky) throws GRBException {
         int poradiePodmienky = 1;
         Map<Integer, Integer> vzdialenostiGaraz = vzdialenosti.get(idGaraze);
@@ -156,8 +162,8 @@ public class SoferiFunkcie {
         }
     }
 
-    public static void pridajPodmienkyYijNieJeUj(GRBModel model, Map<Spoj.KlucSpoja, GRBVar> premenneUj,
-            Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenneYij, List<Spoj> spoje, String cisloPodmienky) throws GRBException {
+    public static void pridajPodmienkyYijNieJeUj(GRBModel model, Map<KlucSpoja, GRBVar> premenneUj,
+            Map<KlucSpoja, Map<KlucSpoja, GRBVar>> premenneYij, List<Spoj> spoje, String cisloPodmienky) throws GRBException {
         int poradiePodmienky = 1;
         for (Spoj spoj : spoje) {
             GRBLinExpr podmienka = new GRBLinExpr();
@@ -170,15 +176,15 @@ public class SoferiFunkcie {
         }
     }
 
-    public static void pridajPodmienkyYijNieJeVi(GRBModel model, Map<Spoj.KlucSpoja, GRBVar> premenneVi,
-            Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenneYij, List<Spoj> spoje, String cisloPodmienky) throws GRBException {
+    public static void pridajPodmienkyYijNieJeVi(GRBModel model, Map<KlucSpoja, GRBVar> premenneVi,
+            Map<KlucSpoja, Map<KlucSpoja, GRBVar>> premenneYij, List<Spoj> spoje, String cisloPodmienky) throws GRBException {
         int poradiePodmienky = 1;
         for (Spoj spoj : spoje) {
             GRBLinExpr podmienka = new GRBLinExpr();
             podmienka.addConstant(Integer.MAX_VALUE);
             podmienka.addTerm(-Integer.MAX_VALUE, premenneVi.get(spoj.getKluc()));
             GRBLinExpr sucet = new GRBLinExpr();
-            for (Map.Entry<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> yIJ : premenneYij.entrySet()) {
+            for (Map.Entry<KlucSpoja, Map<KlucSpoja, GRBVar>> yIJ : premenneYij.entrySet()) {
                 GRBVar premenna = yIJ.getValue().get(spoj.getKluc());
                 if (premenna != null) {
                     sucet.addTerm(1, premenna);
@@ -189,4 +195,54 @@ public class SoferiFunkcie {
         }
     }
 
+    public static List<List<SmenaSofera>> skontrolujPrestavky(GRBModel model, Map<KlucSpoja, Map<KlucSpoja, GRBVar>> premenneXij, Data data, int idGaraze) throws GRBException {
+        List<String> spoje = new ArrayList<>();
+        List<List<SmenaSofera>> smeny = null;
+        boolean porusujePrestavky = true;
+        while (porusujePrestavky) {
+            List<List<SpojSofera>> zlePrestavky = new ArrayList<>();
+            porusujePrestavky = false;
+            spoje.clear();
+            for (GRBVar var : model.getVars()) {
+                if (var.get(GRB.DoubleAttr.X) == 1) {
+                    String v = var.get(GRB.StringAttr.VarName);
+                    if (v.charAt(0) == 'x') {
+                        spoje.add(v);
+                    }
+                    if (v.charAt(0) == 'y') {
+                        spoje.add(v);
+                    }
+                }
+            }
+            smeny = VypisSoferi.vytvorSmeny(VypisSoferi.vytvorTurnusy(spoje, data.getSpoje()), data.getCasVzdialenosti(), idGaraze);
+            for (List<SmenaSofera> turnus : smeny) {
+                boolean turnusSplna = true;
+                for (SmenaSofera smena : turnus) {
+                    for (Konstanty.Prestavka nastaveniePrestavky : PRESTAVKY) {
+                        List<SpojSofera> chybne = smena.porusujePrestavku(nastaveniePrestavky);
+                        if (!chybne.isEmpty()) {
+                            turnusSplna = false;
+                            zlePrestavky.add(chybne);
+                        }
+                    }
+                }
+                if (!turnusSplna) {
+                    porusujePrestavky = true;
+                }
+            }
+            if (!zlePrestavky.isEmpty()) {
+                int poradiePodmienky = 1;
+                for (List<SpojSofera> smena : zlePrestavky) {
+                    GRBLinExpr podmienka = new GRBLinExpr();
+                    for (int i = 0; i < smena.size() - 1; i++) {
+                        podmienka.addTerm(1, premenneXij.get(smena.get(i).getSpoj().getKluc()).get(smena.get(i + 1).getSpoj().getKluc()));
+                    }
+                    model.addConstr(podmienka, GRB.LESS_EQUAL, smena.size() - 2, "14_" + poradiePodmienky);
+                    poradiePodmienky++;
+                }
+                model.optimize();
+            }
+        }
+        return smeny;
+    }
 }

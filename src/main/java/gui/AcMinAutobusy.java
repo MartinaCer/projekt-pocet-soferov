@@ -2,27 +2,20 @@ package gui;
 
 import com.itextpdf.text.DocumentException;
 import dto.Data;
-import dto.Spoj;
 import gurobi.GRBException;
 import gurobiModel.MinPocetAutobusov;
 import importExport.ImportExportDat;
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileNotFoundException;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.JTextArea;
 
 /**
@@ -75,34 +68,9 @@ public class AcMinAutobusy extends AbstractAction {
                                 }
                             }
                         });
-
-                        JPanel panelTabulky = new JPanel();
-                        panelTabulky.setLayout(new BoxLayout(panelTabulky, BoxLayout.PAGE_AXIS));
-                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-                        int poradieTurnusu = 1;
-                        for (List<Spoj> turnus : vysledok.getTurnusy()) {
-                            String dataSpoj[][] = new String[turnus.size()][6];
-                            for (int i = 0; i < turnus.size(); i++) {
-                                Spoj spoj = turnus.get(i);
-                                dataSpoj[i][0] = String.valueOf(spoj.getKluc().getId());
-                                dataSpoj[i][1] = String.valueOf(spoj.getKluc().getLinka());
-                                dataSpoj[i][2] = spoj.getMiestoOdchodu().getId() + " - " + spoj.getMiestoOdchodu().getNazov();
-                                dataSpoj[i][3] = formatter.format(spoj.getCasOdchodu());
-                                dataSpoj[i][4] = spoj.getMiestoPrichodu().getId() + " - " + spoj.getMiestoPrichodu().getNazov();
-                                dataSpoj[i][5] = formatter.format(spoj.getCasPrichodu());
-                            }
-                            String stlSpoj[] = {"id", "linka", "miesto odchodu", "čas odchodu", "miesto príchodu", "čas príchodu"};
-                            JTable jtSpoj = new JTable(dataSpoj, stlSpoj);
-                            jtSpoj.setPreferredScrollableViewportSize(new Dimension((int) jtSpoj.getPreferredSize().getWidth(), jtSpoj.getRowHeight() * (turnus.size())));
-                            JScrollPane scSpoj = new JScrollPane(jtSpoj);
-                            scSpoj.setBorder(BorderFactory.createTitledBorder("Turnus " + poradieTurnusu + ":"));
-                            panelTabulky.add(scSpoj);
-                            poradieTurnusu++;
-                        }
-
                         panel.add(textArea);
                         panel.add(b);
-                        JScrollPane scTabulky = new JScrollPane(panelTabulky);
+                        JScrollPane scTabulky = new JScrollPane(GuiTabulky.vytvorTurnusy(vysledok.getTurnusy()));
                         scTabulky.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
                         scTabulky.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
                         frame.add(panel, BorderLayout.PAGE_START);

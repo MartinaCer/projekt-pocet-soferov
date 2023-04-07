@@ -111,11 +111,7 @@ public final class Priority {
                         break;
                     case RUCNE:
                         for (Spoj spoj : linkaSmer) {
-                            Integer priorita = rucnePriority.getOrDefault(spoj.getKluc(), predvolenaPriorita);
-                            if (priorita == null) {
-                                throw new IllegalArgumentException();
-                            }
-                            spoj.setPriorita(priorita);
+                            spoj.setPriorita(rucnePriority.getOrDefault(spoj.getKluc(), predvolenaPriorita));
                         }
                         break;
                     default:

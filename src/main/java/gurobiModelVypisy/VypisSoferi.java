@@ -142,24 +142,6 @@ public class VypisSoferi {
         return new ArrayList<>(spojeLinky.values());
     }
 
-    public static void vypisTurnusy(List<List<SpojSofer>> turnusy, Map<Integer, Map<Integer, Integer>> vzdialenosti, int idGaraze) {
-        System.out.println("Turnusy:");
-        for (int i = 0; i < turnusy.size(); i++) {
-            String turnus = i + 1 + ": jazda z garáže " + vzdialenosti.get(idGaraze).get(turnusy.get(i).get(0).getSpoj().getMiestoOdchodu().getId()) + " -> ";
-            for (int j = 0; j < turnusy.get(i).size(); j++) {
-                SpojSofer spoj = turnusy.get(i).get(j);
-                turnus += (spoj.zmeneny
-                        ? "jazda do garáže " + vzdialenosti.get(turnusy.get(i).get(j - 1).getSpoj().getMiestoPrichodu().getId()).get(idGaraze)
-                        + " -> nový šofér -> jazda z garáže " + vzdialenosti.get(idGaraze).get(spoj.spoj.getMiestoOdchodu().getId()) + " -> "
-                        : "")
-                        + spoj.spoj.getKluc().toString()
-                        + "(" + spoj.spoj.getCasOdchodu() + ";" + spoj.spoj.getCasPrichodu() + ") -> ";
-            }
-            turnus += "jazda do garáže " + vzdialenosti.get(turnusy.get(i).get(turnusy.get(i).size() - 1).getSpoj().getMiestoPrichodu().getId()).get(idGaraze);
-            System.out.println(turnus);
-        }
-    }
-
     public static class SpojSofer {
 
         private final Spoj spoj;

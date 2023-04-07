@@ -70,15 +70,4 @@ public final class Vypis {
         }
         return turnusy;
     }
-
-    public static void vypisTurnusy(List<List<Spoj>> turnusy) {
-        System.out.println("Turnusy:");
-        for (int i = 0; i < turnusy.size(); i++) {
-            String turnus = i + 1 + ": ";
-            for (Spoj spoj : turnusy.get(i)) {
-                turnus += spoj.getKluc().toString() + "(" + spoj.getCasOdchodu() + ";" + spoj.getCasPrichodu() + ") -> ";
-            }
-            System.out.println(turnus);
-        }
-    }
 }

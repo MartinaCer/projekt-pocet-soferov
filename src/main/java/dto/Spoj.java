@@ -17,6 +17,7 @@ public class Spoj {
     private final LocalTime casPrichodu;
     private final int kilometre;
     private int priorita;
+    private boolean musiObsluzit;
 
     private final List<Spoj> moznePredosleSpojenia;
     private final List<Spoj> mozneNasledovneSpojenia;
@@ -68,6 +69,14 @@ public class Spoj {
 
     public void setPriorita(int priorita) {
         this.priorita = priorita;
+    }
+
+    public boolean isMusiObsluzit() {
+        return musiObsluzit;
+    }
+
+    public void setMusiObsluzit(boolean musiObsluzit) {
+        this.musiObsluzit = musiObsluzit;
     }
 
     public List<Spoj> getMoznePredosleSpojenia() {

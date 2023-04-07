@@ -111,8 +111,9 @@ public final class ImportExportDat {
         return spoje;
     }
 
-    public static Map<KlucSpoja, Integer> naciatajPriority(File subor) throws IOException {
+    public static PriorityImport naciatajPriority(File subor) throws IOException {
         Map<KlucSpoja, Integer> priority = new HashMap<>();
+        List<KlucSpoja> musiObsluzit = new ArrayList<>();
         InputStream is = new FileInputStream(subor);
         BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
         String riadok;
@@ -121,11 +122,18 @@ public final class ImportExportDat {
             int idLinky = Integer.valueOf(spoj[0]);
             int idSpoja = Integer.valueOf(spoj[1]);
             int priorita = Integer.valueOf(spoj[2]);
-            priority.put(new KlucSpoja(idSpoja, idLinky), priorita);
+            KlucSpoja kluc = new KlucSpoja(idSpoja, idLinky);
+            priority.put(kluc, priorita);
+            if (spoj.length == 4) {
+                int musi = Integer.valueOf(spoj[3]);
+                if (musi == 1) {
+                    musiObsluzit.add(kluc);
+                }
+            }
         }
         br.close();
         is.close();
-        return priority;
+        return new PriorityImport(priority, musiObsluzit);
     }
 
     public static void vypisTurnusyDoPdf(List<List<Spoj>> turnusy, String nazov) throws FileNotFoundException, DocumentException {
@@ -303,5 +311,25 @@ public final class ImportExportDat {
             }
         }
         document.close();
+    }
+
+    public static class PriorityImport {
+
+        private final Map<KlucSpoja, Integer> priority;
+        private final List<KlucSpoja> musiObsluzit;
+
+        public PriorityImport(Map<KlucSpoja, Integer> priority, List<KlucSpoja> musiObsluzit) {
+            this.priority = priority;
+            this.musiObsluzit = musiObsluzit;
+        }
+
+        public Map<KlucSpoja, Integer> getPriority() {
+            return priority;
+        }
+
+        public List<KlucSpoja> getMusiObsluzit() {
+            return musiObsluzit;
+        }
+
     }
 }

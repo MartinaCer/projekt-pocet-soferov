@@ -1,6 +1,7 @@
 package gurobiModelFunkcie;
 
 import dto.Spoj;
+import dto.Spoj.KlucSpoja;
 import gurobi.GRB;
 import gurobi.GRBException;
 import gurobi.GRBLinExpr;
@@ -8,6 +9,7 @@ import gurobi.GRBModel;
 import gurobi.GRBVar;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -15,7 +17,7 @@ import java.util.Map;
  */
 public class SpojeFunkcie {
 
-    public static double[] vytvorPolePriorit(GRBVar[] premennePi, Map<Spoj.KlucSpoja, Spoj> spoje) throws GRBException {
+    public static double[] vytvorPolePriorit(GRBVar[] premennePi, Map<KlucSpoja, Spoj> spoje) throws GRBException {
         double[] pole = new double[premennePi.length];
         for (int i = 0; i < premennePi.length; i++) {
             String premenna = premennePi[i].get(GRB.StringAttr.VarName);
@@ -27,9 +29,9 @@ public class SpojeFunkcie {
         return pole;
     }
 
-    public static void pridajPodmienkySucetXijYijPodlaJaVi(GRBModel model, Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenneXij,
-            Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenneYij, Map<Spoj.KlucSpoja, GRBVar> premenneVi,
-            Map<Spoj.KlucSpoja, GRBVar> premennePi, List<Spoj> spoje, String cisloPodmienky) throws GRBException {
+    public static void pridajPodmienkySucetXijYijPodlaJaVi(GRBModel model, Map<KlucSpoja, Map<KlucSpoja, GRBVar>> premenneXij,
+            Map<KlucSpoja, Map<KlucSpoja, GRBVar>> premenneYij, Map<KlucSpoja, GRBVar> premenneVi,
+            Map<KlucSpoja, GRBVar> premennePi, List<Spoj> spoje, String cisloPodmienky) throws GRBException {
         int poradiePodmienky = 1;
         for (Spoj iSpoj : spoje) {
             GRBLinExpr podmienka = new GRBLinExpr();
@@ -41,9 +43,9 @@ public class SpojeFunkcie {
         }
     }
 
-    public static void pridajPodmienkySucetXijYijPodlaIaUj(GRBModel model, Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenneXij,
-            Map<Spoj.KlucSpoja, Map<Spoj.KlucSpoja, GRBVar>> premenneYij, Map<Spoj.KlucSpoja, GRBVar> premenneUj,
-            Map<Spoj.KlucSpoja, GRBVar> premennePi, List<Spoj> spoje, String cisloPodmienky) throws GRBException {
+    public static void pridajPodmienkySucetXijYijPodlaIaUj(GRBModel model, Map<KlucSpoja, Map<KlucSpoja, GRBVar>> premenneXij,
+            Map<KlucSpoja, Map<KlucSpoja, GRBVar>> premenneYij, Map<KlucSpoja, GRBVar> premenneUj,
+            Map<KlucSpoja, GRBVar> premennePi, List<Spoj> spoje, String cisloPodmienky) throws GRBException {
         int poradiePodmienky = 1;
         for (Spoj jSpoj : spoje) {
             GRBLinExpr podmienka = new GRBLinExpr();
@@ -55,4 +57,12 @@ public class SpojeFunkcie {
         }
     }
 
+    public static void pridajPodmienkyMusiObsluzit(GRBModel model, Map<KlucSpoja, GRBVar> premennePi, List<Spoj> spoje, String cisloPodmienky) throws GRBException {
+        List<Spoj> musiObsluzit = spoje.stream().filter(s -> s.isMusiObsluzit()).collect(Collectors.toList());
+        if (musiObsluzit != null && !musiObsluzit.isEmpty()) {
+            GRBLinExpr podmienka = new GRBLinExpr();
+            musiObsluzit.forEach(spoj -> podmienka.addTerm(1, premennePi.get(spoj.getKluc())));
+            model.addConstr(podmienka, GRB.EQUAL, musiObsluzit.size(), cisloPodmienky);
+        }
+    }
 }

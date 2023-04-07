@@ -13,15 +13,12 @@ import gurobiModelFunkcie.SoferiFunkcie;
 import gurobiModelFunkcie.SpojeFunkcie;
 import gurobiModelFunkcie.VseobecneFunkcie;
 import gurobiModelVypisy.SmenaSofera;
-import gurobiModelVypisy.SpojSofera;
 import gurobiModelVypisy.SpojeLinky;
 import gurobiModelVypisy.VypisSoferi;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import konfiguracia.Konstanty;
-import static konfiguracia.Konstanty.PRESTAVKY;
-import konfiguracia.Konstanty.Prestavka;
 
 /**
  *
@@ -80,77 +77,36 @@ public class MinNeobsluzeneSpoje {
         SoferiFunkcie.pridajPodmienkySjTjPreUj(model, uJ, tJ, data.getCasVzdialenosti(), idGaraze, zoznamSpojov, "10");
         SoferiFunkcie.pridajPodmienkyYijNieJeUj(model, uJ, yIJ, zoznamSpojov, "11");
         SoferiFunkcie.pridajPodmienkyYijNieJeVi(model, vI, yIJ, zoznamSpojov, "12");
+        SpojeFunkcie.pridajPodmienkyMusiObsluzit(model, pi, zoznamSpojov, "13");
 
         GRBLinExpr podmienkaPocetAutobusov = new GRBLinExpr();
         podmienkaPocetAutobusov.addTerms(VseobecneFunkcie.vytvorPoleJednotiek(premenneXij.length), premenneXij);
         podmienkaPocetAutobusov.addTerms(VseobecneFunkcie.vytvorPoleJednotiek(premenneYij.length), premenneYij);
-        model.addConstr(podmienkaPocetAutobusov, GRB.LESS_EQUAL, data.getSpoje().size() - pocetAutobusov, "13");
+        model.addConstr(podmienkaPocetAutobusov, GRB.LESS_EQUAL, data.getSpoje().size() - pocetAutobusov, "14");
 
         GRBLinExpr podmienkaPocetU = new GRBLinExpr();
         podmienkaPocetU.addTerms(VseobecneFunkcie.vytvorPoleJednotiek(premenneUj.length), premenneUj);
-        model.addConstr(podmienkaPocetU, GRB.LESS_EQUAL, pocetAutobusov, "14");
+        model.addConstr(podmienkaPocetU, GRB.LESS_EQUAL, pocetAutobusov, "15");
 
         GRBLinExpr podmienkaPocetSoferov = new GRBLinExpr();
         podmienkaPocetSoferov.addTerms(VseobecneFunkcie.vytvorPoleJednotiek(premenneUj.length), premenneUj);
         podmienkaPocetSoferov.addTerms(VseobecneFunkcie.vytvorPoleJednotiek(premenneYij.length), premenneYij);
-        model.addConstr(podmienkaPocetSoferov, GRB.LESS_EQUAL, pocetSoferov, "15");
+        model.addConstr(podmienkaPocetSoferov, GRB.LESS_EQUAL, pocetSoferov, "16");
 
         model.set(GRB.DoubleParam.Heuristics, 0.001);
         if (limit > 0) {
             model.set(GRB.DoubleParam.TimeLimit, limit);
         }
         model.optimize();
-        List<String> spoje = new ArrayList<>();
+
+        List<List<SmenaSofera>> smeny = SoferiFunkcie.skontrolujPrestavky(model, xIJ, data, idGaraze);
         List<String> obsluzeneSpoje = new ArrayList<>();
-        List<List<VypisSoferi.SpojSofer>> turnusy = null;
-        List<List<SmenaSofera>> smeny = null;
-        boolean porusujePrestavky = true;
-        while (porusujePrestavky) {
-            List<List<SpojSofera>> zlePrestavky = new ArrayList<>();
-            porusujePrestavky = false;
-            spoje.clear();
-            for (GRBVar var : model.getVars()) {
-                if (var.get(GRB.DoubleAttr.X) == 1) {
-                    String v = var.get(GRB.StringAttr.VarName);
-                    if (v.charAt(0) == 'p') {
-                        obsluzeneSpoje.add(v);
-                    }
-                    if (v.charAt(0) == 'x') {
-                        spoje.add(v);
-                    }
-                    if (v.charAt(0) == 'y') {
-                        spoje.add(v);
-                    }
+        for (GRBVar var : model.getVars()) {
+            if (var.get(GRB.DoubleAttr.X) == 1) {
+                String v = var.get(GRB.StringAttr.VarName);
+                if (v.charAt(0) == 'p') {
+                    obsluzeneSpoje.add(v);
                 }
-            }
-            turnusy = VypisSoferi.vytvorTurnusy(spoje, data.getSpoje());
-            smeny = VypisSoferi.vytvorSmeny(turnusy, data.getCasVzdialenosti(), idGaraze);
-            for (List<SmenaSofera> turnus : smeny) {
-                boolean turnusSplna = true;
-                for (SmenaSofera smena : turnus) {
-                    for (Prestavka nastaveniePrestavky : PRESTAVKY) {
-                        List<SpojSofera> chybne = smena.porusujePrestavku(nastaveniePrestavky);
-                        if (!chybne.isEmpty()) {
-                            turnusSplna = false;
-                            zlePrestavky.add(chybne);
-                        }
-                    }
-                }
-                if (!turnusSplna) {
-                    porusujePrestavky = true;
-                }
-            }
-            if (!zlePrestavky.isEmpty()) {
-                int poradiePodmienky = 1;
-                for (List<SpojSofera> smena : zlePrestavky) {
-                    GRBLinExpr podmienka = new GRBLinExpr();
-                    for (int i = 0; i < smena.size() - 1; i++) {
-                        podmienka.addTerm(1, xIJ.get(smena.get(i).getSpoj().getKluc()).get(smena.get(i + 1).getSpoj().getKluc()));
-                    }
-                    model.addConstr(podmienka, GRB.LESS_EQUAL, smena.size() - 2, "16_" + poradiePodmienky);
-                    poradiePodmienky++;
-                }
-                model.optimize();
             }
         }
         int p = 0;
@@ -160,8 +116,7 @@ public class MinNeobsluzeneSpoje {
             }
         }
         VysledokMinSpoje vysledok = new VysledokMinSpoje(smeny.stream().mapToInt(s -> s.size()).sum(), p,
-                VypisSoferi.vytvorSmeny(turnusy, data.getCasVzdialenosti(), idGaraze),
-                VypisSoferi.vytvorSpojeLiniek(obsluzeneSpoje, data.getSpoje()));
+                smeny, VypisSoferi.vytvorSpojeLiniek(obsluzeneSpoje, data.getSpoje()));
         model.dispose();
         env.dispose();
         return vysledok;
