@@ -1,9 +1,9 @@
 package gui;
 
-import dto.Data;
-import dto.Spoj;
-import dto.Usek;
-import dto.Zastavka;
+import dataObjekty.Data;
+import dataObjekty.Spoj;
+import dataObjekty.Usek;
+import dataObjekty.Zastavka;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.time.format.DateTimeFormatter;

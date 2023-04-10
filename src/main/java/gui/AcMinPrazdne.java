@@ -1,7 +1,7 @@
 package gui;
 
 import com.itextpdf.text.DocumentException;
-import dto.Data;
+import dataObjekty.Data;
 import gurobi.GRBException;
 import gurobiModel.MinPrazdnePrejazdy;
 import importExport.ImportExportDat;

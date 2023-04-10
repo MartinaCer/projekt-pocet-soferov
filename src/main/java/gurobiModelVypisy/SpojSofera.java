@@ -1,6 +1,6 @@
 package gurobiModelVypisy;
 
-import dto.Spoj;
+import dataObjekty.Spoj;
 
 /**
  *

@@ -1,7 +1,7 @@
 package algoritmus;
 
-import dto.Spoj;
-import dto.Spoj.KlucSpoja;
+import dataObjekty.Spoj;
+import dataObjekty.Spoj.KlucSpoja;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -52,71 +52,45 @@ public final class Priority {
                         }
                         break;
                     case KAZDY_DRUHY:
-                        int minP3 = 1;
-                        int maxP3 = linkaSmer.size() / 2;
-                        int minP2 = 1;
-                        int maxP2 = (int) Math.round((double) linkaSmer.size() / 2.0);
-                        for (int i = 0; i < linkaSmer.size(); i++) {
-                            switch (i % 4) {
-                                case 0:
-                                    linkaSmer.get(i).setPriorita(P2 + minP2);
-                                    minP2++;
-                                    break;
-                                case 1:
-                                    linkaSmer.get(i).setPriorita(P3 + minP3);
-                                    minP3++;
-                                    break;
-                                case 2:
-                                    linkaSmer.get(i).setPriorita(P2 + maxP2);
-                                    maxP2--;
-                                    break;
-                                case 3:
-                                    linkaSmer.get(i).setPriorita(P3 + maxP3);
-                                    maxP3--;
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
+                        nastavPriorityKazdyDruhy(linkaSmer, 1, linkaSmer.size() / 2, 1, (int) Math.round((double) linkaSmer.size() / 2.0));
                         break;
                     case PRVY_POSLEDNY_KAZDY_DRUHY:
                         linkaSmer.get(0).setPriorita(P1);
                         linkaSmer.get(linkaSmer.size() - 1).setPriorita(P1);
-                        int minP3_2 = 1;
-                        int maxP3_2 = (linkaSmer.size() - 2) / 2;
-                        int minP2_2 = 1;
-                        int maxP2_2 = (int) Math.round((double) (linkaSmer.size() - 2) / 2.0);
-                        for (int i = 1; i < linkaSmer.size() - 1; i++) {
-                            switch (i % 4) {
-                                case 0:
-                                    linkaSmer.get(i).setPriorita(P2 + minP2_2);
-                                    minP2_2++;
-                                    break;
-                                case 1:
-                                    linkaSmer.get(i).setPriorita(P3 + minP3_2);
-                                    minP3_2++;
-                                    break;
-                                case 2:
-                                    linkaSmer.get(i).setPriorita(P2 + maxP2_2);
-                                    maxP2_2--;
-                                    break;
-                                case 3:
-                                    linkaSmer.get(i).setPriorita(P3 + maxP3_2);
-                                    maxP3_2--;
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
+                        nastavPriorityKazdyDruhy(linkaSmer, 1, (linkaSmer.size() - 2) / 2, 1, (int) Math.round((double) (linkaSmer.size() - 2) / 2.0));
                         break;
                     case RUCNE:
-                        for (Spoj spoj : linkaSmer) {
-                            spoj.setPriorita(rucnePriority.getOrDefault(spoj.getKluc(), predvolenaPriorita));
-                        }
+                        linkaSmer.forEach(spoj -> spoj.setPriorita(rucnePriority.getOrDefault(spoj.getKluc(), predvolenaPriorita)));
                         break;
+
                     default:
                         break;
                 }
+            }
+        }
+    }
+
+    private static void nastavPriorityKazdyDruhy(List<Spoj> linkaSmer, int minP3, int maxP3, int minP2, int maxP2) {
+        for (int i = 0; i < linkaSmer.size(); i++) {
+            switch (i % 4) {
+                case 0:
+                    linkaSmer.get(i).setPriorita(P2 + minP2);
+                    minP2++;
+                    break;
+                case 1:
+                    linkaSmer.get(i).setPriorita(P3 + minP3);
+                    minP3++;
+                    break;
+                case 2:
+                    linkaSmer.get(i).setPriorita(P2 + maxP2);
+                    maxP2--;
+                    break;
+                case 3:
+                    linkaSmer.get(i).setPriorita(P3 + maxP3);
+                    maxP3--;
+                    break;
+                default:
+                    break;
             }
         }
     }

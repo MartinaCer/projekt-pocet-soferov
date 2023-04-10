@@ -1,7 +1,7 @@
 package gurobiModelVypisy;
 
-import dto.Spoj;
-import dto.Spoj.KlucSpoja;
+import dataObjekty.Spoj;
+import dataObjekty.Spoj.KlucSpoja;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

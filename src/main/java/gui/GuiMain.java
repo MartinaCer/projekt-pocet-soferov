@@ -1,6 +1,6 @@
 package gui;
 
-import dto.Data;
+import dataObjekty.Data;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;

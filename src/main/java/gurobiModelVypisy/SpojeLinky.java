@@ -1,6 +1,6 @@
 package gurobiModelVypisy;
 
-import dto.Spoj;
+import dataObjekty.Spoj;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

@@ -1,7 +1,7 @@
 package gurobiModelVypisy;
 
-import dto.Spoj;
-import dto.Spoj.KlucSpoja;
+import dataObjekty.Spoj;
+import dataObjekty.Spoj.KlucSpoja;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -83,48 +83,32 @@ public class VypisSoferi {
                 }
             }
             if (indexyZmenySofera.isEmpty()) {
-                SmenaSofera smena = new SmenaSofera(vzdialenosti.get(idGaraze).get(turnus.get(0).spoj.getMiestoOdchodu().getId()),
-                        vzdialenosti.get(turnus.get(turnus.size() - 1).spoj.getMiestoPrichodu().getId()).get(idGaraze));
-                for (int i = 0; i < turnus.size() - 1; i++) {
-                    Spoj sucasnySpoj = turnus.get(i).spoj;
-                    Spoj nasledovnySpoj = turnus.get(i + 1).spoj;
-                    int medzera = nasledovnySpoj.getCasOdchodu().toSecondOfDay() - sucasnySpoj.getCasPrichodu().toSecondOfDay();
-                    int prejazd = vzdialenosti.get(sucasnySpoj.getMiestoPrichodu().getId()).get(nasledovnySpoj.getMiestoOdchodu().getId());
-                    smena.getSpoje().add(new SpojSofera(sucasnySpoj, prejazd, medzera - prejazd));
-                }
-                smena.getSpoje().add(new SpojSofera(turnus.get(turnus.size() - 1).spoj, 0, 0));
-                smenyTurnus.add(smena);
+                smenyTurnus.add(vytvorSmenu(0, turnus.size() - 1, turnus, vzdialenosti, idGaraze));
             } else {
                 int indexZaciatku = 0;
                 for (Integer index : indexyZmenySofera) {
-                    SmenaSofera smena = new SmenaSofera(vzdialenosti.get(idGaraze).get(turnus.get(indexZaciatku).spoj.getMiestoOdchodu().getId()),
-                            vzdialenosti.get(turnus.get(index - 1).spoj.getMiestoPrichodu().getId()).get(idGaraze));
-                    for (int i = indexZaciatku; i < index - 1; i++) {
-                        Spoj sucasnySpoj = turnus.get(i).spoj;
-                        Spoj nasledovnySpoj = turnus.get(i + 1).spoj;
-                        int medzera = nasledovnySpoj.getCasOdchodu().toSecondOfDay() - sucasnySpoj.getCasPrichodu().toSecondOfDay();
-                        int prejazd = vzdialenosti.get(sucasnySpoj.getMiestoPrichodu().getId()).get(nasledovnySpoj.getMiestoOdchodu().getId());
-                        smena.getSpoje().add(new SpojSofera(sucasnySpoj, prejazd, medzera - prejazd));
-                    }
-                    smena.getSpoje().add(new SpojSofera(turnus.get(index - 1).spoj, 0, 0));
-                    smenyTurnus.add(smena);
+                    smenyTurnus.add(vytvorSmenu(indexZaciatku, index - 1, turnus, vzdialenosti, idGaraze));
                     indexZaciatku = index;
                 }
-                SmenaSofera smena = new SmenaSofera(vzdialenosti.get(idGaraze).get(turnus.get(indexZaciatku).spoj.getMiestoOdchodu().getId()),
-                        vzdialenosti.get(turnus.get(turnus.size() - 1).spoj.getMiestoPrichodu().getId()).get(idGaraze));
-                for (int i = indexZaciatku; i < turnus.size() - 1; i++) {
-                    Spoj sucasnySpoj = turnus.get(i).spoj;
-                    Spoj nasledovnySpoj = turnus.get(i + 1).spoj;
-                    int medzera = nasledovnySpoj.getCasOdchodu().toSecondOfDay() - sucasnySpoj.getCasPrichodu().toSecondOfDay();
-                    int prejazd = vzdialenosti.get(sucasnySpoj.getMiestoPrichodu().getId()).get(nasledovnySpoj.getMiestoOdchodu().getId());
-                    smena.getSpoje().add(new SpojSofera(sucasnySpoj, prejazd, medzera - prejazd));
-                }
-                smena.getSpoje().add(new SpojSofera(turnus.get(turnus.size() - 1).spoj, 0, 0));
-                smenyTurnus.add(smena);
+                smenyTurnus.add(vytvorSmenu(indexZaciatku, turnus.size() - 1, turnus, vzdialenosti, idGaraze));
             }
             smeny.add(smenyTurnus);
         }
         return smeny;
+    }
+
+    private static SmenaSofera vytvorSmenu(int indexZaciatku, int indexKonca, List<SpojSofer> turnus, Map<Integer, Map<Integer, Integer>> vzdialenosti, int idGaraze) {
+        SmenaSofera smena = new SmenaSofera(vzdialenosti.get(idGaraze).get(turnus.get(indexZaciatku).spoj.getMiestoOdchodu().getId()),
+                vzdialenosti.get(turnus.get(indexKonca).spoj.getMiestoPrichodu().getId()).get(idGaraze));
+        for (int i = indexZaciatku; i < indexKonca; i++) {
+            Spoj sucasnySpoj = turnus.get(i).spoj;
+            Spoj nasledovnySpoj = turnus.get(i + 1).spoj;
+            int medzera = nasledovnySpoj.getCasOdchodu().toSecondOfDay() - sucasnySpoj.getCasPrichodu().toSecondOfDay();
+            int prejazd = vzdialenosti.get(sucasnySpoj.getMiestoPrichodu().getId()).get(nasledovnySpoj.getMiestoOdchodu().getId());
+            smena.getSpoje().add(new SpojSofera(sucasnySpoj, prejazd, medzera - prejazd));
+        }
+        smena.getSpoje().add(new SpojSofera(turnus.get(indexKonca).spoj, 0, 0));
+        return smena;
     }
 
     public static List<SpojeLinky> vytvorSpojeLiniek(List<String> obsluzeneSpoje, Map<KlucSpoja, Spoj> spoje) {

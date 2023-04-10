@@ -1,6 +1,6 @@
 package gui;
 
-import dto.Data;
+import dataObjekty.Data;
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
@@ -47,7 +47,7 @@ public class AcKonfiguracia extends AbstractAction {
                 panelPolia.setLayout(new BoxLayout(panelPolia, BoxLayout.PAGE_AXIS));
                 JPanel panelTlacitka = new JPanel();
                 panelTlacitka.setLayout(new FlowLayout());
-                JLabel garL = new JLabel("garáž");
+                JLabel garL = new JLabel("depo");
                 JTextField gar = new JTextField(5);
                 gar.setText(konfiguracia.getGaraz().toString());
                 JLabel rezL = new JLabel("rezerva [min]");

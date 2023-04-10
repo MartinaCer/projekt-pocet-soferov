@@ -1,8 +1,8 @@
-package dto;
+package dataObjekty;
 
 import algoritmus.MoznePrepojeniaSpojov;
 import algoritmus.Vzdialenosti;
-import dto.Spoj.KlucSpoja;
+import dataObjekty.Spoj.KlucSpoja;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

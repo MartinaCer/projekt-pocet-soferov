@@ -1,7 +1,7 @@
 package gurobiModel;
 
-import dto.Data;
-import dto.Spoj;
+import dataObjekty.Data;
+import dataObjekty.Spoj;
 import gurobi.GRB;
 import gurobi.GRBEnv;
 import gurobi.GRBException;

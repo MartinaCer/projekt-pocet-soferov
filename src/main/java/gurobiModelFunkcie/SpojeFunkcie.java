@@ -1,7 +1,7 @@
 package gurobiModelFunkcie;
 
-import dto.Spoj;
-import dto.Spoj.KlucSpoja;
+import dataObjekty.Spoj;
+import dataObjekty.Spoj.KlucSpoja;
 import gurobi.GRB;
 import gurobi.GRBException;
 import gurobi.GRBLinExpr;

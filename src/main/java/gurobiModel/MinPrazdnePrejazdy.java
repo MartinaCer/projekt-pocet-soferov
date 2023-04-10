@@ -1,9 +1,9 @@
 package gurobiModel;
 
 import gurobiModelVypisy.Vypis;
-import dto.Data;
-import dto.Spoj;
-import dto.Spoj.KlucSpoja;
+import dataObjekty.Data;
+import dataObjekty.Spoj;
+import dataObjekty.Spoj.KlucSpoja;
 import gurobi.GRB;
 import gurobi.GRBEnv;
 import gurobi.GRBException;

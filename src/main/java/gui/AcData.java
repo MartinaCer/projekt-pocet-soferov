@@ -1,18 +1,15 @@
 package gui;
 
-import dto.Data;
-import dto.Zastavka;
+import dataObjekty.Data;
+import dataObjekty.Zastavka;
 import importExport.ImportExportDat;
-import java.awt.BorderLayout;
 import java.awt.EventQueue;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import javax.swing.AbstractAction;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -45,23 +42,14 @@ public class AcData extends AbstractAction {
                 frame.getContentPane().removeAll();
                 JPanel panel = new JPanel();
                 panel.setBounds(40, 80, 200, 30);
-                JPanel panelPolia = new JPanel();
-                panelPolia.setLayout(new BoxLayout(panelPolia, BoxLayout.PAGE_AXIS));
-                JPanel panelTlacitka = new JPanel();
-                panelTlacitka.setLayout(new FlowLayout());
                 JButton zasB = new JButton("zastávky");
-                zasB.setBounds(50, 100, 95, 30);
                 JLabel zasL = new JLabel("chýba súbor");
                 JButton usekB = new JButton("úseky");
-                usekB.setBounds(50, 100, 95, 30);
                 JLabel usekL = new JLabel("chýba súbor");
                 JButton spojB = new JButton("spoje");
-                spojB.setBounds(50, 100, 95, 30);
                 JLabel spojL = new JLabel("chýba súbor");
-                JButton demo = new JButton("demo dáta");
-                demo.setBounds(50, 100, 95, 30);
                 JButton b = new JButton("načítaj");
-                b.setBounds(50, 100, 95, 30);
+                JButton demo = new JButton("demo dáta");
                 zasB.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
@@ -102,7 +90,7 @@ public class AcData extends AbstractAction {
                             Map<Integer, Zastavka> zastavky = ImportExportDat.nacitajZastavky(null);
                             data.vytvorData(zastavky, ImportExportDat.nacitajUseky(null, zastavky), ImportExportDat.nacitajSpoje(null, zastavky));
                             JOptionPane.showMessageDialog(frame, "Hotovo.", "Načítanie dát", JOptionPane.INFORMATION_MESSAGE);
-                        } catch (IOException ex) {
+                        } catch (Exception ex) {
                             JOptionPane.showMessageDialog(frame, "Zlý formát súboru.", "Načítanie dát", JOptionPane.ERROR_MESSAGE);
                         }
                     }
@@ -115,22 +103,20 @@ public class AcData extends AbstractAction {
                                 Map<Integer, Zastavka> zastavky = ImportExportDat.nacitajZastavky(zas);
                                 data.vytvorData(zastavky, ImportExportDat.nacitajUseky(usek, zastavky), ImportExportDat.nacitajSpoje(spoj, zastavky));
                                 JOptionPane.showMessageDialog(frame, "Hotovo.", "Načítanie dát", JOptionPane.INFORMATION_MESSAGE);
-                            } catch (IOException ex) {
+                            } catch (Exception ex) {
                                 JOptionPane.showMessageDialog(frame, "Zlý formát súboru.", "Načítanie dát", JOptionPane.ERROR_MESSAGE);
                             }
                         }
                     }
                 });
-                panelPolia.add(zasB);
-                panelPolia.add(zasL);
-                panelPolia.add(usekB);
-                panelPolia.add(usekL);
-                panelPolia.add(spojB);
-                panelPolia.add(spojL);
-                panelTlacitka.add(demo);
-                panelTlacitka.add(b);
-                panel.add(panelPolia, BorderLayout.PAGE_START);
-                frame.add(panelTlacitka, BorderLayout.PAGE_END);
+                panel.add(zasB);
+                panel.add(zasL);
+                panel.add(usekB);
+                panel.add(usekL);
+                panel.add(spojB);
+                panel.add(spojL);
+                panel.add(b);
+                panel.add(demo);
                 frame.add(panel);
                 frame.revalidate();
                 frame.repaint();

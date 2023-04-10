@@ -1,7 +1,7 @@
 package gui;
 
-import dto.Data;
-import dto.Spoj;
+import dataObjekty.Data;
+import dataObjekty.Spoj;
 import gurobiModelVypisy.SmenaSofera;
 import gurobiModelVypisy.SpojeLinky;
 import java.awt.Dimension;
@@ -34,12 +34,7 @@ public final class GuiTabulky {
             String dataSpoj[][] = new String[turnus.size()][6];
             for (int i = 0; i < turnus.size(); i++) {
                 Spoj spoj = turnus.get(i);
-                dataSpoj[i][0] = String.valueOf(spoj.getKluc().getId());
-                dataSpoj[i][1] = String.valueOf(spoj.getKluc().getLinka());
-                dataSpoj[i][2] = spoj.getMiestoOdchodu().getId() + " - " + spoj.getMiestoOdchodu().getNazov();
-                dataSpoj[i][3] = formatter.format(spoj.getCasOdchodu());
-                dataSpoj[i][4] = spoj.getMiestoPrichodu().getId() + " - " + spoj.getMiestoPrichodu().getNazov();
-                dataSpoj[i][5] = formatter.format(spoj.getCasPrichodu());
+                nastavSpojeTurnus(dataSpoj, i, spoj, formatter);
             }
             String stlSpoj[] = {"id", "linka", "miesto odchodu", "čas odchodu", "miesto príchodu", "čas príchodu"};
             JTable jtSpoj = new JTable(dataSpoj, stlSpoj);
@@ -59,29 +54,14 @@ public final class GuiTabulky {
         int poradieTurnusu = 1;
         for (List<Spoj> turnus : turnusy) {
             String dataSpoj[][] = new String[turnus.size() + 2][6];
-            dataSpoj[0][0] = "";
-            dataSpoj[0][1] = "";
-            dataSpoj[0][2] = "Garáž";
-            dataSpoj[0][3] = formatter.format(turnus.get(0).getCasOdchodu().minusSeconds(data.getCasVzdialenosti()
-                    .get(data.getKonfiguracia().getGaraz()).get(turnus.get(0).getMiestoOdchodu().getId())));
-            dataSpoj[0][4] = turnus.get(0).getMiestoOdchodu().getId() + " - " + turnus.get(0).getMiestoOdchodu().getNazov();
-            dataSpoj[0][5] = formatter.format(turnus.get(0).getCasOdchodu());
             for (int i = 0; i < turnus.size(); i++) {
                 Spoj spoj = turnus.get(i);
-                dataSpoj[i + 1][0] = String.valueOf(spoj.getKluc().getId());
-                dataSpoj[i + 1][1] = String.valueOf(spoj.getKluc().getLinka());
-                dataSpoj[i + 1][2] = spoj.getMiestoOdchodu().getId() + " - " + spoj.getMiestoOdchodu().getNazov();
-                dataSpoj[i + 1][3] = formatter.format(spoj.getCasOdchodu());
-                dataSpoj[i + 1][4] = spoj.getMiestoPrichodu().getId() + " - " + spoj.getMiestoPrichodu().getNazov();
-                dataSpoj[i + 1][5] = formatter.format(spoj.getCasPrichodu());
+                nastavSpojeTurnus(dataSpoj, i + 1, spoj, formatter);
             }
-            dataSpoj[turnus.size() + 1][0] = "";
-            dataSpoj[turnus.size() + 1][1] = "";
-            dataSpoj[turnus.size() + 1][2] = turnus.get(turnus.size() - 1).getMiestoPrichodu().getNazov();
-            dataSpoj[turnus.size() + 1][3] = formatter.format(turnus.get(turnus.size() - 1).getCasPrichodu());
-            dataSpoj[turnus.size() + 1][4] = "Garáž";
-            dataSpoj[turnus.size() + 1][5] = formatter.format(turnus.get(turnus.size() - 1).getCasPrichodu().plusSeconds(data.getCasVzdialenosti()
-                    .get(turnus.get(turnus.size() - 1).getMiestoPrichodu().getId()).get(data.getKonfiguracia().getGaraz())));
+            nastavJazdyGarazTurnus(dataSpoj, turnus.size() + 1, turnus.get(0), turnus.get(turnus.size() - 1),
+                    data.getCasVzdialenosti().get(data.getKonfiguracia().getGaraz()).get(turnus.get(0).getMiestoOdchodu().getId()),
+                    data.getCasVzdialenosti().get(turnus.get(turnus.size() - 1).getMiestoPrichodu().getId()).get(data.getKonfiguracia().getGaraz()),
+                    formatter);
             String stlSpoj[] = {"id", "linka", "miesto odchodu", "čas odchodu", "miesto príchodu", "čas príchodu"};
             JTable jtSpoj = new JTable(dataSpoj, stlSpoj);
             jtSpoj.setPreferredScrollableViewportSize(new Dimension((int) jtSpoj.getPreferredSize().getWidth(), jtSpoj.getRowHeight() * (turnus.size() + 2)));
@@ -104,29 +84,14 @@ public final class GuiTabulky {
             int poradieZmeny = 1;
             for (SmenaSofera zmena : turnus) {
                 String dataSpoj[][] = new String[zmena.getSpoje().size() + 2][7];
-                dataSpoj[0][0] = "";
-                dataSpoj[0][1] = "";
-                dataSpoj[0][2] = "Garáž";
-                dataSpoj[0][3] = formatter.format(zmena.getSpoje().get(0).getSpoj().getCasOdchodu().minusSeconds(zmena.getCestaZgaraze()));
-                dataSpoj[0][4] = zmena.getSpoje().get(0).getSpoj().getMiestoOdchodu().getId() + " - " + zmena.getSpoje().get(0).getSpoj().getMiestoOdchodu().getNazov();
-                dataSpoj[0][5] = formatter.format(zmena.getSpoje().get(0).getSpoj().getCasOdchodu());
                 dataSpoj[0][6] = "";
                 for (int i = 0; i < zmena.getSpoje().size(); i++) {
                     Spoj spoj = zmena.getSpoje().get(i).getSpoj();
-                    dataSpoj[i + 1][0] = String.valueOf(spoj.getKluc().getId());
-                    dataSpoj[i + 1][1] = String.valueOf(spoj.getKluc().getLinka());
-                    dataSpoj[i + 1][2] = spoj.getMiestoOdchodu().getId() + " - " + spoj.getMiestoOdchodu().getNazov();
-                    dataSpoj[i + 1][3] = formatter.format(spoj.getCasOdchodu());
-                    dataSpoj[i + 1][4] = spoj.getMiestoPrichodu().getId() + " - " + spoj.getMiestoPrichodu().getNazov();
-                    dataSpoj[i + 1][5] = formatter.format(spoj.getCasPrichodu());
+                    nastavSpojeTurnus(dataSpoj, i + 1, spoj, formatter);
                     dataSpoj[i + 1][6] = formatter.format(LocalTime.ofSecondOfDay(zmena.getSpoje().get(i).getPrestavkaPoSpoji()));
                 }
-                dataSpoj[zmena.getSpoje().size() + 1][0] = "";
-                dataSpoj[zmena.getSpoje().size() + 1][1] = "";
-                dataSpoj[zmena.getSpoje().size() + 1][2] = zmena.getSpoje().get(turnus.size() - 1).getSpoj().getMiestoPrichodu().getId() + " - " + zmena.getSpoje().get(turnus.size() - 1).getSpoj().getMiestoPrichodu().getNazov();
-                dataSpoj[zmena.getSpoje().size() + 1][3] = formatter.format(zmena.getSpoje().get(zmena.getSpoje().size() - 1).getSpoj().getCasPrichodu());
-                dataSpoj[zmena.getSpoje().size() + 1][4] = "Garáž";
-                dataSpoj[zmena.getSpoje().size() + 1][5] = formatter.format(zmena.getSpoje().get(zmena.getSpoje().size() - 1).getSpoj().getCasPrichodu().plusSeconds(zmena.getCestaDoGaraze()));
+                nastavJazdyGarazTurnus(dataSpoj, zmena.getSpoje().size() + 1, zmena.getSpoje().get(0).getSpoj(), zmena.getSpoje().get(zmena.getSpoje().size() - 1).getSpoj(),
+                        zmena.getCestaZgaraze(), zmena.getCestaDoGaraze(), formatter);
                 dataSpoj[zmena.getSpoje().size() + 1][6] = "";
                 String stlSpoj[] = {"id", "linka", "miesto odchodu", "čas odchodu", "miesto príchodu", "čas príchodu", "prestávka"};
                 JTable jtSpoj = new JTable(dataSpoj, stlSpoj);
@@ -180,5 +145,31 @@ public final class GuiTabulky {
             panelLinky.add(scTurnus);
         }
         return panelLinky;
+    }
+
+    private static void nastavSpojeTurnus(String dataSpoj[][], int riadok, Spoj spoj, DateTimeFormatter formatter) {
+        dataSpoj[riadok][0] = String.valueOf(spoj.getKluc().getId());
+        dataSpoj[riadok][1] = String.valueOf(spoj.getKluc().getLinka());
+        dataSpoj[riadok][2] = spoj.getMiestoOdchodu().getId() + " - " + spoj.getMiestoOdchodu().getNazov();
+        dataSpoj[riadok][3] = formatter.format(spoj.getCasOdchodu());
+        dataSpoj[riadok][4] = spoj.getMiestoPrichodu().getId() + " - " + spoj.getMiestoPrichodu().getNazov();
+        dataSpoj[riadok][5] = formatter.format(spoj.getCasPrichodu());
+    }
+
+    private static void nastavJazdyGarazTurnus(String dataSpoj[][], int posledny, Spoj prvySpoj, Spoj poslednySpoj,
+            int cestaZgaraze, int cestaDoGaraze, DateTimeFormatter formatter) {
+        dataSpoj[0][0] = "";
+        dataSpoj[0][1] = "";
+        dataSpoj[0][2] = "Depo";
+        dataSpoj[0][3] = formatter.format(prvySpoj.getCasOdchodu().minusSeconds(cestaZgaraze));
+        dataSpoj[0][4] = prvySpoj.getMiestoOdchodu().getId() + " - " + prvySpoj.getMiestoOdchodu().getNazov();
+        dataSpoj[0][5] = formatter.format(prvySpoj.getCasOdchodu());
+
+        dataSpoj[posledny][0] = "";
+        dataSpoj[posledny][1] = "";
+        dataSpoj[posledny][2] = poslednySpoj.getMiestoPrichodu().getId() + " - " + poslednySpoj.getMiestoPrichodu().getNazov();
+        dataSpoj[posledny][3] = formatter.format(poslednySpoj.getCasPrichodu());
+        dataSpoj[posledny][4] = "Depo";
+        dataSpoj[posledny][5] = formatter.format(poslednySpoj.getCasPrichodu().plusSeconds(cestaDoGaraze));
     }
 }

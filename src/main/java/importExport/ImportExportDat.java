@@ -9,10 +9,10 @@ import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
-import dto.Spoj;
-import dto.Spoj.KlucSpoja;
-import dto.Usek;
-import dto.Zastavka;
+import dataObjekty.Spoj;
+import dataObjekty.Spoj.KlucSpoja;
+import dataObjekty.Usek;
+import dataObjekty.Zastavka;
 import gurobiModelVypisy.SmenaSofera;
 import gurobiModelVypisy.SpojSofera;
 import gurobiModelVypisy.SpojeLinky;
@@ -44,6 +44,7 @@ public final class ImportExportDat {
     private static final String ZASTAVKY_DEMO = "/zastavky.csv";
     private static final String USEKY_DEMO = "/useky.csv";
     private static final String SPOJE_DEMO = "/spoje.csv";
+    private static final String PRIORITY_DEMO = "/priority.csv";
 
     private ImportExportDat() {
     }
@@ -114,16 +115,20 @@ public final class ImportExportDat {
     public static PriorityImport naciatajPriority(File subor) throws IOException {
         Map<KlucSpoja, Integer> priority = new HashMap<>();
         List<KlucSpoja> musiObsluzit = new ArrayList<>();
-        InputStream is = new FileInputStream(subor);
+        InputStream is = subor == null
+                ? ImportExportDat.class.getResourceAsStream(PRIORITY_DEMO)
+                : new FileInputStream(subor);
         BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
         String riadok;
         while ((riadok = br.readLine()) != null) {
             String[] spoj = riadok.split(";");
             int idLinky = Integer.valueOf(spoj[0]);
             int idSpoja = Integer.valueOf(spoj[1]);
-            int priorita = Integer.valueOf(spoj[2]);
             KlucSpoja kluc = new KlucSpoja(idSpoja, idLinky);
-            priority.put(kluc, priorita);
+            if (!spoj[2].isEmpty()) {
+                int priorita = Integer.valueOf(spoj[2]);
+                priority.put(kluc, priorita);
+            }
             if (spoj.length == 4) {
                 int musi = Integer.valueOf(spoj[3]);
                 if (musi == 1) {

@@ -1,7 +1,7 @@
 package algoritmus;
 
-import dto.Usek;
-import dto.Zastavka;
+import dataObjekty.Usek;
+import dataObjekty.Zastavka;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

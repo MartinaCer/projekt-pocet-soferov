@@ -1,6 +1,6 @@
 package algoritmus;
 
-import dto.Spoj;
+import dataObjekty.Spoj;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

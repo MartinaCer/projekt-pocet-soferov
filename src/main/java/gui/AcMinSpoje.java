@@ -7,9 +7,9 @@ import algoritmus.Priority.Strategia;
 import static algoritmus.Priority.Strategia.PRVY_POSLEDNY;
 import static algoritmus.Priority.Strategia.RUCNE;
 import com.itextpdf.text.DocumentException;
-import dto.Data;
-import dto.Spoj;
-import dto.Spoj.KlucSpoja;
+import dataObjekty.Data;
+import dataObjekty.Spoj;
+import dataObjekty.Spoj.KlucSpoja;
 import gurobi.GRBException;
 import gurobiModel.MinNeobsluzeneSpoje;
 import gurobiModelVypisy.SpojeLinky;
@@ -88,6 +88,7 @@ public class AcMinSpoje extends AbstractAction {
                                 JButton subB = new JButton("priority");
                                 JLabel subL = new JLabel("chýba súbor");
                                 JButton impB = new JButton("importuj");
+                                JButton demoB = new JButton("demo priority");
                                 JButton rucB = new JButton("ručne");
                                 subB.addActionListener(new ActionListener() {
                                     @Override
@@ -111,9 +112,24 @@ public class AcMinSpoje extends AbstractAction {
                                                         "Ručné nastavenie priorít", JOptionPane.INFORMATION_MESSAGE);
                                                 vypocitajRucne(Integer.valueOf(aut.getText()), Integer.valueOf(sof.getText()), Integer.valueOf(cas.getText()),
                                                         Integer.valueOf(predvolena), priority);
-                                            } catch (IOException ex) {
+                                            } catch (Exception ex) {
                                                 JOptionPane.showMessageDialog(frame, "Zlý formát súboru.", "Načítanie dát", JOptionPane.ERROR_MESSAGE);
                                             }
+                                        }
+                                    }
+                                });
+                                demoB.addActionListener(new ActionListener() {
+                                    @Override
+                                    public void actionPerformed(ActionEvent e) {
+                                        try {
+                                            PriorityImport priority = ImportExportDat.naciatajPriority(null);
+                                            JOptionPane.showMessageDialog(frame, "Hotovo.", "Načítanie dát", JOptionPane.INFORMATION_MESSAGE);
+                                            String predvolena = JOptionPane.showInputDialog(frame, "Predvolená priorita",
+                                                    "Ručné nastavenie priorít", JOptionPane.INFORMATION_MESSAGE);
+                                            vypocitajRucne(Integer.valueOf(aut.getText()), Integer.valueOf(sof.getText()), Integer.valueOf(cas.getText()),
+                                                    Integer.valueOf(predvolena), priority);
+                                        } catch (Exception ex) {
+                                            JOptionPane.showMessageDialog(frame, "Zlý formát súboru.", "Načítanie dát", JOptionPane.ERROR_MESSAGE);
                                         }
                                     }
                                 });
@@ -129,6 +145,7 @@ public class AcMinSpoje extends AbstractAction {
                                 stPanel.add(subB);
                                 stPanel.add(subL);
                                 stPanel.add(impB);
+                                stPanel.add(demoB);
                                 stPanel.add(rucB);
                                 frame.add(stPanel);
                                 frame.revalidate();

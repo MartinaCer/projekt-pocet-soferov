@@ -1,7 +1,7 @@
 package gui;
 
 import com.itextpdf.text.DocumentException;
-import dto.Data;
+import dataObjekty.Data;
 import gurobi.GRBException;
 import gurobiModel.MinPrazdnePrejazdyGaraz;
 import importExport.ImportExportDat;
@@ -30,7 +30,7 @@ public class AcMinPrazdneGaraz extends AbstractAction {
     private final Data data;
 
     public AcMinPrazdneGaraz(JFrame frame, Data data) {
-        super("Minimálne prázdne prejazdy s garážou");
+        super("Minimálne prázdne prejazdy s depom");
         this.frame = frame;
         this.data = data;
     }
@@ -41,7 +41,7 @@ public class AcMinPrazdneGaraz extends AbstractAction {
             public void run() {
                 frame.getContentPane().removeAll();
                 if (!data.isNastaveneData()) {
-                    JOptionPane.showMessageDialog(frame, "Chýbajú dáta.", "Minimálne prázdne prejazdy s garážou", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(frame, "Chýbajú dáta.", "Minimálne prázdne prejazdy s depom", JOptionPane.ERROR_MESSAGE);
                 } else {
                     JPanel panel = new JPanel();
                     panel.setBounds(40, 80, 200, 30);
@@ -73,9 +73,9 @@ public class AcMinPrazdneGaraz extends AbstractAction {
                                         if (nazov != null && !nazov.isEmpty()) {
                                             try {
                                                 ImportExportDat.vypisTurnusyDoPdf(vysledok.getTurnusy(), nazov);
-                                                JOptionPane.showMessageDialog(frame, "Hotovo.", "Minimálne prázdne prejazdy s garážou", JOptionPane.INFORMATION_MESSAGE);
+                                                JOptionPane.showMessageDialog(frame, "Hotovo.", "Minimálne prázdne prejazdy s depom", JOptionPane.INFORMATION_MESSAGE);
                                             } catch (FileNotFoundException | DocumentException ex) {
-                                                JOptionPane.showMessageDialog(frame, "Chyba pri exporte.", "Minimálne prázdne prejazdy s garážou", JOptionPane.ERROR_MESSAGE);
+                                                JOptionPane.showMessageDialog(frame, "Chyba pri exporte.", "Minimálne prázdne prejazdy s depom", JOptionPane.ERROR_MESSAGE);
                                             }
                                         }
                                     }
@@ -90,7 +90,7 @@ public class AcMinPrazdneGaraz extends AbstractAction {
                                 frame.revalidate();
                                 frame.repaint();
                             } catch (GRBException ex) {
-                                JOptionPane.showMessageDialog(frame, "Nie je možné vyriešiť model.", "Minimálne prázdne prejazdy s garážou", JOptionPane.ERROR_MESSAGE);
+                                JOptionPane.showMessageDialog(frame, "Nie je možné vyriešiť model.", "Minimálne prázdne prejazdy s depom", JOptionPane.ERROR_MESSAGE);
                             }
                         }
                     });
