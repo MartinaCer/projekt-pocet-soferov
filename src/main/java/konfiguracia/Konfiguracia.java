@@ -10,6 +10,7 @@ import static konfiguracia.Konstanty.PRESTAVKA_V_DOBE_JAZDY;
 import static konfiguracia.Konstanty.PRESTAVKY;
 import konfiguracia.Konstanty.Prestavka;
 import static konfiguracia.Konstanty.REZERVA;
+import static konfiguracia.Konstanty.REZERVA_GARAZ;
 
 /**
  *
@@ -19,6 +20,7 @@ public class Konfiguracia {
 
     private Integer garaz;
     private Integer rezerva;
+    private Integer rezervaGaraz;
     private Integer maxDobaJazdy;
     private Integer maxDobaSmeny;
     private Integer prestavkaVdobeJazdy;
@@ -29,6 +31,7 @@ public class Konfiguracia {
     public void vynuluj() {
         garaz = null;
         rezerva = null;
+        rezervaGaraz = null;
         maxDobaJazdy = null;
         maxDobaSmeny = null;
         prestavkaVdobeJazdy = null;
@@ -51,6 +54,14 @@ public class Konfiguracia {
 
     public void setRezerva(Integer rezerva) {
         this.rezerva = rezerva;
+    }
+
+    public Integer getRezervaGaraz() {
+        return rezervaGaraz != null ? rezervaGaraz : REZERVA_GARAZ;
+    }
+
+    public void setRezervaGaraz(Integer rezervaGaraz) {
+        this.rezervaGaraz = rezervaGaraz;
     }
 
     public Integer getMaxDobaJazdy() {

@@ -41,7 +41,7 @@ public final class MoznePrepojeniaSpojov {
             for (int j = 0; j < spoje.size(); j++) {
                 Spoj spoj2 = spoje.get(j);
                 int vzdialenost = vzdialenosti.get(spoj1.getMiestoPrichodu().getId()).get(idGaraze) + vzdialenosti.get(idGaraze).get(spoj2.getMiestoOdchodu().getId());
-                vzdialenost += Konstanty.REZERVA;
+                vzdialenost += Konstanty.REZERVA_GARAZ;
                 int prichod = spoj1.getCasPrichodu().toSecondOfDay();
                 int odchod = spoj2.getCasOdchodu().toSecondOfDay();
                 if (prichod + vzdialenost < odchod && odchod - prichod < 28 * 60 * 60) {

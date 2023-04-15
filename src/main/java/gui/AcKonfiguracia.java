@@ -53,6 +53,9 @@ public class AcKonfiguracia extends AbstractAction {
                 JLabel rezL = new JLabel("rezerva [min]");
                 JTextField rez = new JTextField(5);
                 rez.setText(String.valueOf(konfiguracia.getRezerva() / 60));
+                JLabel rezGarL = new JLabel("rezerva v garáži [min]");
+                JTextField rezGar = new JTextField(5);
+                rezGar.setText(String.valueOf(konfiguracia.getRezervaGaraz() / 60));
                 JLabel jazdaL = new JLabel("maximálna doba jazdy [h]");
                 JTextField jazda = new JTextField(5);
                 jazda.setText(String.valueOf(konfiguracia.getMaxDobaJazdy() / 3600));
@@ -99,6 +102,7 @@ public class AcKonfiguracia extends AbstractAction {
                     public void actionPerformed(ActionEvent e) {
                         konfiguracia.setGaraz(Integer.valueOf(gar.getText()));
                         konfiguracia.setRezerva(Integer.valueOf(rez.getText()) * 60);
+                        konfiguracia.setRezervaGaraz(Integer.valueOf(rezGar.getText()) * 60);
                         konfiguracia.setMaxDobaJazdy(Integer.valueOf(jazda.getText()) * 3600);
                         konfiguracia.setMaxDobaSmeny(Integer.valueOf(zmena.getText()) * 3600);
                         konfiguracia.setPrestavkaVdobeJazdy(Integer.valueOf(pres.getText()) * 60);
@@ -130,6 +134,8 @@ public class AcKonfiguracia extends AbstractAction {
                 panelPolia.add(gar);
                 panelPolia.add(rezL);
                 panelPolia.add(rez);
+                panelPolia.add(rezGarL);
+                panelPolia.add(rezGar);
                 panelPolia.add(jazdaL);
                 panelPolia.add(jazda);
                 panelPolia.add(zmenaL);

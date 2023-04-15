@@ -11,6 +11,7 @@ public final class Konstanty {
 
     public static final int GARAZ = 470;
     public static final int REZERVA = 600;
+    public static final int REZERVA_GARAZ = 1800;
     public static final int MAX_DOBA_JAZDY = 36000;
     public static final int MAX_DOBA_SMENY = 46800;
     public static final List<Prestavka> PRESTAVKY = Arrays.asList(
