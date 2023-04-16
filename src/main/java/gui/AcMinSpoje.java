@@ -74,7 +74,7 @@ public class AcMinSpoje extends AbstractAction {
                     JComboBox pri = new JComboBox(Priority.Strategia.values());
                     JLabel autL = new JLabel("počet autobusov");
                     JTextField aut = new JTextField(3);
-                    JLabel sofL = new JLabel("počet šoférov");
+                    JLabel sofL = new JLabel("počet vodičov");
                     JTextField sof = new JTextField(3);
                     JLabel casL = new JLabel("časový limit [s]");
                     JTextField cas = new JTextField(5);
@@ -235,7 +235,7 @@ public class AcMinSpoje extends AbstractAction {
             textArea.setEditable(false);
             StringBuilder text = new StringBuilder();
             text.append("Počet spojov: " + data.getSpoje().size() + "\n");
-            text.append("Počet šoférov: " + vysledok.getPocetSoferov() + "\n");
+            text.append("Počet vodičov: " + vysledok.getPocetSoferov() + "\n");
             text.append("Počet turnusov: " + vysledok.getSmeny().size() + "\n");
             text.append("Počet obslúžených spojov: " + vysledok.getPocetObsluzenych());
             switch (strategia) {
@@ -265,7 +265,7 @@ public class AcMinSpoje extends AbstractAction {
                     for (SpojeLinky spojeLinky : vysledok.getLinky()) {
                         for (List<SpojLinky> linka : spojeLinky.getSpoje().values()) {
                             for (SpojLinky spoj : linka) {
-                                if (spoj.getSpoj().getPriorita() == P2) {
+                                if (spoj.getSpoj().getPriorita() >= P2) {
                                     pocetNastavenych2++;
                                     if (spoj.isObsluzeny()) {
                                         pocetObsluzenych2++;
@@ -291,7 +291,7 @@ public class AcMinSpoje extends AbstractAction {
                                         pocetObsluzenychTop++;
                                     }
                                 }
-                                if (spoj.getSpoj().getPriorita() == P2) {
+                                else if (spoj.getSpoj().getPriorita() >= P2) {
                                     pocetNastavenych3++;
                                     if (spoj.isObsluzeny()) {
                                         pocetObsluzenych3++;

@@ -53,7 +53,7 @@ public class AcKonfiguracia extends AbstractAction {
                 JLabel rezL = new JLabel("rezerva [min]");
                 JTextField rez = new JTextField(5);
                 rez.setText(String.valueOf(konfiguracia.getRezerva() / 60));
-                JLabel rezGarL = new JLabel("rezerva v garáži [min]");
+                JLabel rezGarL = new JLabel("rezerva v depe [min]");
                 JTextField rezGar = new JTextField(5);
                 rezGar.setText(String.valueOf(konfiguracia.getRezervaGaraz() / 60));
                 JLabel jazdaL = new JLabel("maximálna doba jazdy [h]");
@@ -66,7 +66,7 @@ public class AcKonfiguracia extends AbstractAction {
                 JLabel presL = new JLabel("prestávka v dobe jazdy [min]");
                 JTextField pres = new JTextField(5);
                 pres.setText(String.valueOf(konfiguracia.getPrestavkaVdobeJazdy() / 60));
-                JLabel soferL = new JLabel("cena šoféra [€/deň]");
+                JLabel soferL = new JLabel("cena vodiča [€/deň]");
                 JTextField sofer = new JTextField(5);
                 sofer.setText(konfiguracia.getCenaSofera().toString());
                 JLabel kmL = new JLabel("cena za kilometer [€]");

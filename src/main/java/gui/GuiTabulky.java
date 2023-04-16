@@ -97,7 +97,7 @@ public final class GuiTabulky {
                 JTable jtSpoj = new JTable(dataSpoj, stlSpoj);
                 jtSpoj.setPreferredScrollableViewportSize(new Dimension((int) jtSpoj.getPreferredSize().getWidth(), jtSpoj.getRowHeight() * (zmena.getSpoje().size() + 2)));
                 JScrollPane scSpoj = new JScrollPane(jtSpoj);
-                scSpoj.setBorder(BorderFactory.createTitledBorder("Smena " + poradieZmeny + " - trvanie smeny " + LocalTime.ofSecondOfDay(zmena.trvanieSmeny()).format(formatter)
+                scSpoj.setBorder(BorderFactory.createTitledBorder("Zmena " + poradieZmeny + " - trvanie zmeny " + LocalTime.ofSecondOfDay(zmena.trvanieSmeny()).format(formatter)
                         + " - trvanie jazdy " + LocalTime.ofSecondOfDay(zmena.trvanieJazdy()).format(formatter)));
                 panelTurnus.add(scSpoj);
                 poradieZmeny++;

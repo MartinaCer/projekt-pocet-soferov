@@ -17,7 +17,7 @@ public final class Priority {
 
     public final static int P1 = 100;
     public final static int P2 = 50;
-    public final static int P3 = 10;
+    public final static int P3 = 1;
 
     private Priority() {
     }
@@ -52,12 +52,12 @@ public final class Priority {
                         }
                         break;
                     case KAZDY_DRUHY:
-                        nastavPriorityKazdyDruhy(linkaSmer, 1, linkaSmer.size() / 2, 1, (int) Math.round((double) linkaSmer.size() / 2.0));
+                        nastavPriorityKazdyDruhy(linkaSmer, 1, linkaSmer.size() / 2, 1, (int) Math.round((double) linkaSmer.size() / 2.0), false);
                         break;
                     case PRVY_POSLEDNY_KAZDY_DRUHY:
                         linkaSmer.get(0).setPriorita(P1);
                         linkaSmer.get(linkaSmer.size() - 1).setPriorita(P1);
-                        nastavPriorityKazdyDruhy(linkaSmer, 1, (linkaSmer.size() - 2) / 2, 1, (int) Math.round((double) (linkaSmer.size() - 2) / 2.0));
+                        nastavPriorityKazdyDruhy(linkaSmer, 1, (linkaSmer.size() - 2) / 2, 1, (int) Math.round((double) (linkaSmer.size() - 2) / 2.0), true);
                         break;
                     case RUCNE:
                         linkaSmer.forEach(spoj -> spoj.setPriorita(rucnePriority.getOrDefault(spoj.getKluc(), predvolenaPriorita)));
@@ -70,8 +70,10 @@ public final class Priority {
         }
     }
 
-    private static void nastavPriorityKazdyDruhy(List<Spoj> linkaSmer, int minP3, int maxP3, int minP2, int maxP2) {
-        for (int i = 0; i < linkaSmer.size(); i++) {
+    private static void nastavPriorityKazdyDruhy(List<Spoj> linkaSmer, int minP3, int maxP3, int minP2, int maxP2, boolean kombinacia) {
+        int zaciatok = kombinacia ? 1 : 0;
+        int koniec = kombinacia ? linkaSmer.size() -1 : linkaSmer.size();
+        for (int i = zaciatok; i < koniec; i++) {
             switch (i % 4) {
                 case 0:
                     linkaSmer.get(i).setPriorita(P2 + minP2);

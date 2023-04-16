@@ -30,7 +30,7 @@ public class AcMinSoferi extends AbstractAction {
     private final Data data;
 
     public AcMinSoferi(JFrame frame, Data data) {
-        super("Minimálny počet šoférov");
+        super("Minimálny počet vodičov");
         this.frame = frame;
         this.data = data;
     }
@@ -41,7 +41,7 @@ public class AcMinSoferi extends AbstractAction {
             public void run() {
                 frame.getContentPane().removeAll();
                 if (!data.isNastaveneData()) {
-                    JOptionPane.showMessageDialog(frame, "Chýbajú dáta.", "Minimálny počet šoférov", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(frame, "Chýbajú dáta.", "Minimálny počet vodičov", JOptionPane.ERROR_MESSAGE);
                 } else {
                     JPanel panel = new JPanel();
                     panel.setBounds(40, 80, 200, 30);
@@ -75,9 +75,9 @@ public class AcMinSoferi extends AbstractAction {
                                         if (nazov != null && !nazov.isEmpty()) {
                                             try {
                                                 ImportExportDat.vypisSmenyDoPdf(vysledok.getSmeny(), nazov);
-                                                JOptionPane.showMessageDialog(frame, "Hotovo.", "Minimálny počet šoférov", JOptionPane.INFORMATION_MESSAGE);
+                                                JOptionPane.showMessageDialog(frame, "Hotovo.", "Minimálny počet vodičov", JOptionPane.INFORMATION_MESSAGE);
                                             } catch (FileNotFoundException | DocumentException ex) {
-                                                JOptionPane.showMessageDialog(frame, "Chyba pri exporte.", "Minimálny počet šoférov", JOptionPane.ERROR_MESSAGE);
+                                                JOptionPane.showMessageDialog(frame, "Chyba pri exporte.", "Minimálny počet vodičov", JOptionPane.ERROR_MESSAGE);
                                             }
                                         }
                                     }
@@ -92,7 +92,7 @@ public class AcMinSoferi extends AbstractAction {
                                 frame.revalidate();
                                 frame.repaint();
                             } catch (GRBException ex) {
-                                JOptionPane.showMessageDialog(frame, "Nie je možné vyriešiť model.", "Minimálny počet šoférov", JOptionPane.ERROR_MESSAGE);
+                                JOptionPane.showMessageDialog(frame, "Nie je možné vyriešiť model.", "Minimálny počet vodičov", JOptionPane.ERROR_MESSAGE);
                             }
                         }
                     });
